@@ -4,86 +4,76 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"math"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/thejasmeetsingh/oclai/pkg/config"
 )
 
-// BASE_URL is the base URL for the Ollama API, read from the environment variable.
-var BASE_URL = os.Getenv("BASE_URL")
+var oclaiConfig config.Config
 
-// DEFAULT_MODEL is the default AI model used by the CLI.
-var DEFAULT_MODEL = "qwen3:14b"
+func loadConfig() error {
+	file := config.GetConfigFile()
+	data, err := os.ReadFile(file)
+	if err != nil {
+		return err
+	}
 
-// Tags is a struct representing the response from the "/api/tags" endpoint.
-// It contains a list of available models and their sizes.
-type Tags struct {
-	Models []struct {
-		Model string `json:"model"` // Name of the model.
-		Size  int    `json:"size"`  // Size of the model in bytes.
-	} `json:"models"` // List of models.
+	return json.Unmarshal(data, &oclaiConfig)
+}
+
+func updateConfig() error {
+	data, err := json.MarshalIndent(&oclaiConfig, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	os.WriteFile(oclaiConfig.File, data, 0644)
+	return nil
+}
+
+func testConnection() error {
+	resp, err := http.Get(oclaiConfig.BaseURL + "/api/tags")
+	if err != nil {
+		return fmt.Errorf("failed to connect to Ollama service: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("ollama service returned unexpected status: %d", resp.StatusCode)
+	}
+	return nil
+}
+
+func preCheck() error {
+	if err := testConnection(); err != nil {
+		return err
+	}
+
+	if oclaiConfig.DefaultModel == "" {
+		return fmt.Errorf("please select a default model")
+	}
+
+	return nil
 }
 
 // rootCmd is the main command for the CLI.
 var rootCmd = &cobra.Command{
-	Use:   "oclai",
-	Short: "A completely offline agentic CLI",
-	Long:  "An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models.",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		// Fetch the list of available models from the Ollama API.
-		response, err := http.Get(BASE_URL + "/api/tags")
-		if err != nil || response.StatusCode != http.StatusOK {
-			fmt.Printf("Cannot connect to Ollama: %s\n", err.Error())
-			os.Exit(1)
-		}
-	},
-	Run: func(cmd *cobra.Command, args []string) {
-		// Fetch the list of available models from the Ollama API.
-		response, err := http.Get(BASE_URL + "/api/tags")
-		if err != nil {
-			fmt.Printf("Error caught while fetching models: %s\n", err.Error())
-			os.Exit(1)
-		}
-		defer response.Body.Close()
-
-		// Decode the JSON response into the Tags struct.
-		var tags Tags
-		if err = json.NewDecoder(response.Body).Decode(&tags); err != nil {
-			fmt.Printf("Error caught while parsing models data: %s\n", err.Error())
-			os.Exit(1)
-		}
-
-		// Check if there are no available models.
-		if len(tags.Models) == 0 {
-			fmt.Println("No models available ☹️")
-			os.Exit(1)
-		}
-
-		// Display the available models.
-		fmt.Println("Available Models 🤖")
-		fmt.Printf("%-4s %-10s %-50s\n", "-", "MODEL", "SIZE")
-		fmt.Println(strings.Repeat("-", 50))
-
-		for idx, model := range tags.Models {
-			// Convert the model size from bytes to gigabytes.
-			modelSize := fmt.Sprintf("%d GB", model.Size/int(math.Pow(1024, 3)))
-			fmt.Printf("%-4d %-10s %-50s\n", idx+1, model.Model, modelSize)
-		}
-
-		// Prompt the user to select a default model.
-		modelChoice := getModelChoice(tags)
-		DEFAULT_MODEL = tags.Models[modelChoice].Model
-	},
+	Use:     "oclai",
+	Short:   "A completely offline agentic CLI",
+	Long:    "An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models.",
+	Example: `oclai q "What's the latest news of today"`,
 }
 
 // chat is a subcommand for asking a query to the selected model.
 var chat = &cobra.Command{
-	Use:   "q [query]",
-	Short: "Ask a query",
-	Long:  "Ask a query to the selected model",
+	Use:     "q [query]",
+	Short:   "Ask a query",
+	Long:    "Ask a query to the selected model",
+	PreRunE: func(cmd *cobra.Command, args []string) error { return preCheck() },
 	Run: func(cmd *cobra.Command, args []string) {
 		// Join the query arguments into a single string.
 		query := strings.Join(args, " ")
@@ -92,13 +82,13 @@ var chat = &cobra.Command{
 		body := &bytes.Buffer{}
 		encoder := json.NewEncoder(body)
 		encoder.Encode(map[string]interface{}{
-			"model":  DEFAULT_MODEL,
+			"model":  oclaiConfig.DefaultModel,
 			"prompt": query,
 			"think":  false,
 		})
 
 		// Send the request to the Ollama API.
-		response, err := http.Post(BASE_URL+"/api/generate", "application/json", body)
+		response, err := http.Post(oclaiConfig.BaseURL+"/api/generate", "application/json", body)
 		if err != nil {
 			fmt.Printf("Error caught while generating a response: %s\n", err.Error())
 			os.Exit(1)
@@ -125,26 +115,6 @@ var chat = &cobra.Command{
 	},
 }
 
-// getModelChoice prompts the user to select a model from the list of available models.
-func getModelChoice(tags Tags) int {
-	fmt.Println("Select a default model:")
-
-	var modelChoice int
-	_, err := fmt.Scanf("%d", &modelChoice)
-	if err != nil {
-		fmt.Println("Please enter a valid integer")
-		return getModelChoice(tags)
-	}
-
-	// Validate the user's input.
-	if modelChoice < 1 || modelChoice > (len(tags.Models)+1) {
-		fmt.Println("Invalid choice")
-		return getModelChoice(tags)
-	}
-
-	return modelChoice
-}
-
 // Execute runs the root command.
 func Execute() {
 	err := rootCmd.Execute()
@@ -155,5 +125,39 @@ func Execute() {
 
 // init adds the "chat" command as a subcommand to the root command.
 func init() {
+	rootCmd.PersistentFlags().Func("baseURL", "Set Ollama BaseURL", func(s string) error {
+		if s == "" {
+			return fmt.Errorf("baseURL should not be empty")
+		}
+
+		baseURL, err := url.Parse(strings.TrimSpace(s))
+		if err != nil {
+			return fmt.Errorf("please enter a valid URL")
+		}
+
+		oclaiConfig.BaseURL = baseURL.String()
+		return updateConfig()
+	})
+
+	rootCmd.PersistentFlags().Func("model", "Set Default Model", func(s string) error {
+		if s == "" {
+			return fmt.Errorf("model value should not be empty")
+		}
+
+		oclaiConfig.DefaultModel = strings.TrimSpace(s)
+		return updateConfig()
+	})
+
 	rootCmd.AddCommand(chat)
+
+	err := config.SetupConfig()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	if err = loadConfig(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
