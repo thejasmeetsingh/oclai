@@ -16,14 +16,17 @@ type Config struct {
 }
 
 func SetupConfig() error {
+	filePath := filepath.Join(os.Getenv("HOME"), ".oclai-config.json")
+
 	viper.SetConfigName(".oclai-config")
 	viper.SetConfigType("json")
 	viper.AddConfigPath("$HOME")
 
 	viper.SetDefault("baseURL", "http://localhost:11434")
 	viper.SetDefault("defaultModel", "")
-	viper.SetDefault("file", filepath.Join(os.Getenv("HOME"), ".oclai-config.json"))
+	viper.SetDefault("file", filePath)
 
+	viper.SafeWriteConfigAs(filePath)
 	return viper.ReadInConfig()
 }
 
