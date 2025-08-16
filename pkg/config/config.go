@@ -1,13 +1,13 @@
 package config
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/spf13/viper"
 )
-
-var configFile string
 
 type Config struct {
 	BaseURL      string `json:"baseURL"`
@@ -15,7 +15,9 @@ type Config struct {
 	File         string `json:"file"`
 }
 
-func SetupConfig() error {
+var OclaiConfig Config
+
+func setupConfig() error {
 	filePath := filepath.Join(os.Getenv("HOME"), ".oclai-config.json")
 
 	viper.SetConfigName(".oclai-config")
@@ -30,10 +32,33 @@ func SetupConfig() error {
 	return viper.ReadInConfig()
 }
 
-func GetConfigFile() string {
-	if configFile != "" {
-		return configFile
+func LoadConfig() error {
+	err := setupConfig()
+	if err != nil {
+		return err
 	}
 
-	return viper.GetString("file")
+	file := viper.GetString("file")
+	data, err := os.ReadFile(file)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(data, &OclaiConfig)
+}
+
+func UpdateConfig() error {
+	data, err := json.MarshalIndent(&OclaiConfig, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(OclaiConfig.File, data, 0644)
+}
+
+func DefaultModelCheck() error {
+	if OclaiConfig.DefaultModel == "" {
+		return fmt.Errorf("please select a default model 🤖")
+	}
+	return nil
 }
