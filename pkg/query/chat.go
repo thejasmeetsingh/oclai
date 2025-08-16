@@ -1,3 +1,6 @@
+// Implements the 'q' command for asking queries to the selected model.
+// It handles query formatting, file input, piped input, and sends requests to the Ollama API.
+
 package query
 
 import (
@@ -15,23 +18,26 @@ import (
 
 var fileContents []string
 
-// query is a subcommand for asking a query to the selected model.
+// Query is a subcommand for asking a query to the selected model.
 var Query = &cobra.Command{
 	Use:   "q [query]",
-	Short: "Ask a query",
-	Long:  "Ask a query to the model",
+	Short: "Ask a query to the model",
+	Long:  "Ask a query to the model. You can provide a query directly, pipe input from another command, or specify a file to analyze.",
 	Args:  cobra.MinimumNArgs(1),
 	Example: `
 		oclai q "Hey what's up"
 		cat /path/file.txt | oclai q "Summerize this file"
 		oclai q "Analyze this code" -f /path/main.py
 	`,
-	PreRunE: func(cmd *cobra.Command, args []string) error { return config.DefaultModelCheck() },
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		return config.DefaultModelCheck()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		// Join the query arguments into a single string.
 		query := strings.Join(args, " ")
 
 		if query == "" {
+			fmt.Println("Please provide a query 😒")
 			return
 		}
 
@@ -39,7 +45,7 @@ var Query = &cobra.Command{
 		if len(fileContents) == 0 {
 			err := readPipedInput()
 			if err != nil {
-				fmt.Printf("😬 Error while reading the piped input %s", err.Error())
+				fmt.Printf("❌ Error while reading the piped input: %s\n", err.Error())
 			}
 		}
 
@@ -60,13 +66,13 @@ var Query = &cobra.Command{
 		// Send the request to the Ollama API.
 		response, err := http.Post(config.OclaiConfig.BaseURL+"/api/generate", "application/json", body)
 		if err != nil {
-			fmt.Printf("❌ Error caught while generating a response: %s\n", err.Error())
+			fmt.Printf("❌ Error while generating a response: %s\n", err.Error())
 			os.Exit(1)
 		}
 
 		// Check if the response status is OK.
 		if response.StatusCode != http.StatusOK {
-			fmt.Printf("❌ Received invalid response from Ollama service - StatusCode: %d\n", response.StatusCode)
+			fmt.Printf("❌ Received invalid response from Ollama service - Status Code: %d\n", response.StatusCode)
 			os.Exit(1)
 		}
 
@@ -77,7 +83,7 @@ var Query = &cobra.Command{
 
 		var modelResponse ModelResponse
 		if err = json.NewDecoder(response.Body).Decode(&modelResponse); err != nil {
-			fmt.Printf("😬 Error caught while parsing the model response: %s\n", err.Error())
+			fmt.Printf("😬 Error while parsing the model response: %s\n", err.Error())
 			os.Exit(1)
 		}
 
@@ -86,11 +92,13 @@ var Query = &cobra.Command{
 	},
 }
 
+// isValidFilePath checks if a file exists at the given path.
 func isValidFilePath(filePath string) bool {
 	_, err := os.Stat(filePath)
 	return err == nil
 }
 
+// readFromReader reads content from a file reader and stores it in fileContents.
 func readFromReader(reader *os.File) error {
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
@@ -104,25 +112,27 @@ func readFromReader(reader *os.File) error {
 	return nil
 }
 
+// readFileContent reads content from a file and stores it in fileContents.
 func readFileContent(filePath string) error {
 	if !isValidFilePath(filePath) {
-		return fmt.Errorf("%s is not a valid file path ☹️", filePath)
+		return fmt.Errorf("'%s' is not a valid file path", filePath)
 	}
 
 	file, err := os.Open(filePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("☹️ failed to open file: %w", err)
 	}
 	defer file.Close()
 
 	return readFromReader(file)
 }
 
+// readPipedInput reads content from standard input if it's being piped.
 func readPipedInput() error {
 	// Check if we have piped input
 	stat, err := os.Stdin.Stat()
 	if err != nil {
-		return fmt.Errorf("❌ failed to stat stdin: %w", err)
+		return fmt.Errorf("failed to check stdin status: %w", err)
 	}
 
 	// If data is being piped in
@@ -133,6 +143,7 @@ func readPipedInput() error {
 	return nil
 }
 
+// init adds the file flag to the Query command.
 func init() {
 	Query.PersistentFlags().FuncP("file", "f", "Read from file and ask query about the content", readFileContent)
 }
