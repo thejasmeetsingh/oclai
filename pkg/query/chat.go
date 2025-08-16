@@ -14,6 +14,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/thejasmeetsingh/oclai/pkg/config"
+	"github.com/thejasmeetsingh/oclai/pkg/markdown"
 )
 
 var fileContents []string
@@ -87,8 +88,11 @@ var Query = &cobra.Command{
 			os.Exit(1)
 		}
 
-		// Print the response.
-		fmt.Printf("* %s\n", modelResponse.Response)
+		// Render the markdown response.
+		if err = markdown.Render(modelResponse.Response); err != nil {
+			fmt.Printf("😶 Error caught while rendering response: %s\n", err.Error())
+			os.Exit(1)
+		}
 	},
 }
 
