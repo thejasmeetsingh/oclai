@@ -1,7 +1,7 @@
 // Implements the 'q' command for asking queries to the selected model.
 // It handles query formatting, file input, piped input, and sends requests to the Ollama API.
 
-package query
+package chat
 
 import (
 	"bufio"

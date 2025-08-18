@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/thejasmeetsingh/oclai/pkg/chat"
 	"github.com/thejasmeetsingh/oclai/pkg/config"
-	"github.com/thejasmeetsingh/oclai/pkg/query"
 )
 
 // rootCmd is the main command for the CLI application.
@@ -80,7 +80,7 @@ func init() {
 	rootCmd.PersistentFlags().Func("model", "Set Default Model", setDefaultModel)
 
 	// Add the query subcommand
-	rootCmd.AddCommand(query.Query)
+	rootCmd.AddCommand(chat.Query)
 
 	// Load configuration file
 	if err := config.LoadConfig(); err != nil {
