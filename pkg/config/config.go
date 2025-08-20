@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/fatih/color"
 	"github.com/spf13/viper"
 )
 
@@ -25,8 +26,15 @@ type Config struct {
 	File string `json:"file"`
 }
 
-// OclaiConfig is a global variable that holds the application's configuration.
-var OclaiConfig Config
+var (
+	// OclaiConfig is a global variable that holds the application's configuration.
+	OclaiConfig Config
+
+	// Common color messages
+	InfoMessage    = color.New(color.FgBlue)
+	SuccessMessage = color.New(color.FgGreen)
+	ErrorMessage   = color.New(color.FgRed)
+)
 
 // setupConfig initializes the configuration by setting the default values and writing the configuration file.
 func setupConfig() error {
@@ -73,7 +81,7 @@ func UpdateConfig() error {
 // DefaultModelCheck checks if the default model is set in the configuration.
 func DefaultModelCheck() error {
 	if OclaiConfig.DefaultModel == "" {
-		return fmt.Errorf("please select a default model 🤖") // Return an error if the default model is not set
+		return fmt.Errorf("%s", ErrorMessage.Sprint("please select a default model 🤖")) // Return an error if the default model is not set
 	}
 	return nil
 }

@@ -5,16 +5,13 @@ package chat
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/thejasmeetsingh/oclai/pkg/app"
 	"github.com/thejasmeetsingh/oclai/pkg/config"
-	"github.com/thejasmeetsingh/oclai/pkg/markdown"
 )
 
 var fileContents []string
@@ -35,10 +32,11 @@ var Query = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		// Join the query arguments into a single string.
-		query := strings.Join(args, " ")
+		query := strings.TrimSpace(strings.Join(args, " "))
+		errMsg := config.ErrorMessage
 
 		if query == "" {
-			fmt.Println("Please provide a query 😒")
+			errMsg.Println("Please provide a query 😒")
 			return
 		}
 
@@ -46,7 +44,8 @@ var Query = &cobra.Command{
 		if len(fileContents) == 0 {
 			err := readPipedInput()
 			if err != nil {
-				fmt.Printf("❌ Error while reading the piped input: %s\n", err.Error())
+				errMsg.Println(err.Error())
+				os.Exit(1)
 			}
 		}
 
@@ -55,42 +54,18 @@ var Query = &cobra.Command{
 			query = fmt.Sprintf("```\n%s\n```\nUser Query: %s", strings.Join(fileContents, "\n"), query)
 		}
 
-		// Create a JSON body for the request.
-		body := &bytes.Buffer{}
-		encoder := json.NewEncoder(body)
-		encoder.Encode(map[string]any{
-			"model":  config.OclaiConfig.DefaultModel,
-			"prompt": query,
-			"think":  false,
-		})
-
-		// Send the request to the Ollama API.
-		response, err := http.Post(config.OclaiConfig.BaseURL+"/api/generate", "application/json", body)
-		if err != nil {
-			fmt.Printf("❌ Error while generating a response: %s\n", err.Error())
-			os.Exit(1)
+		request := app.ModelRequest{
+			Model: config.OclaiConfig.DefaultModel,
+			Think: false,
+			Messages: []app.Message{{
+				Role:    app.User,
+				Content: query,
+			}},
 		}
 
-		// Check if the response status is OK.
-		if response.StatusCode != http.StatusOK {
-			fmt.Printf("❌ Received invalid response from Ollama service - Status Code: %d\n", response.StatusCode)
-			os.Exit(1)
-		}
-
-		// Decode the response into the ModelResponse struct.
-		type ModelResponse struct {
-			Response string `json:"response"` // The response from the AI model.
-		}
-
-		var modelResponse ModelResponse
-		if err = json.NewDecoder(response.Body).Decode(&modelResponse); err != nil {
-			fmt.Printf("😬 Error while parsing the model response: %s\n", err.Error())
-			os.Exit(1)
-		}
-
-		// Render the markdown response.
-		if err = markdown.Render(modelResponse.Response); err != nil {
-			fmt.Printf("😶 Error caught while rendering response: %s\n", err.Error())
+		// Send a one-off chat request to Ollama API
+		if err := app.Chat(request); err != nil {
+			errMsg.Println(err)
 			os.Exit(1)
 		}
 	},
@@ -124,7 +99,7 @@ func readFileContent(filePath string) error {
 
 	file, err := os.Open(filePath)
 	if err != nil {
-		return fmt.Errorf("☹️ failed to open file: %w", err)
+		return fmt.Errorf("failed to open file: %w", err)
 	}
 	defer file.Close()
 

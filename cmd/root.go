@@ -15,12 +15,17 @@ import (
 	"github.com/thejasmeetsingh/oclai/pkg/config"
 )
 
+var (
+	infoMsg = config.InfoMessage
+	errMsg  = config.ErrorMessage
+)
+
 // rootCmd is the main command for the CLI application.
 // It serves as the entry point for all CLI commands.
 var rootCmd = &cobra.Command{
 	Use:     "oclai",
-	Short:   "A completely offline agentic CLI",
-	Long:    "An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models.",
+	Short:   infoMsg.Sprint("A completely offline agentic CLI"),
+	Long:    infoMsg.Sprint("An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."),
 	Example: `oclai q "What's the latest news of today"`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 0 {
@@ -44,13 +49,13 @@ var rootCmd = &cobra.Command{
 // It validates the input and updates the configuration if valid.
 func setBaseURL(arg string) error {
 	if arg == "" {
-		return fmt.Errorf("❌ Base URL cannot be empty. Please provide a valid URL")
+		return fmt.Errorf("baseURL cannot be empty. Please provide a valid URL")
 	}
 
 	// Parse the URL and validate it
 	baseURL, err := url.Parse(strings.TrimSpace(arg))
 	if err != nil {
-		return fmt.Errorf("❌ Invalid URL format: %w. Please enter a valid URL", err)
+		return fmt.Errorf("invalid URL format: %w. Please enter a valid URL", err)
 	}
 
 	// Update the configuration with the new base URL
@@ -62,7 +67,7 @@ func setBaseURL(arg string) error {
 // It validates the input and updates the configuration if valid.
 func setDefaultModel(arg string) error {
 	if arg == "" {
-		return fmt.Errorf("❌ Model value cannot be empty. Please provide a valid model name")
+		return fmt.Errorf("model value cannot be empty. Please provide a valid model name")
 	}
 
 	// Update the configuration with the new default model
@@ -84,7 +89,7 @@ func init() {
 
 	// Load configuration file
 	if err := config.LoadConfig(); err != nil {
-		fmt.Println("❌ Failed to load configuration:", err)
+		errMsg.Println("Failed to load configuration: ", err)
 		os.Exit(1)
 	}
 }
@@ -94,7 +99,7 @@ func init() {
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
-		fmt.Println("❌ Error executing command:", err)
+		errMsg.Println("Error executing command:", err)
 		os.Exit(1)
 	}
 }
