@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/thejasmeetsingh/oclai/pkg/config"
@@ -107,6 +108,35 @@ func ListModels() ([]ModelInfo, error) {
 	}
 
 	return modelsResp.Models, nil
+}
+
+// Fetch models from ollama and display them in an appropriate format
+func ShowModels() error {
+	models, err := ListModels()
+	if err != nil {
+		return err
+	}
+
+	warningMsg := config.WarningMessage
+	if len(models) == 0 {
+		warningMsg.Println("No models found. Please install a model using: ollama pull <model-name>")
+		return nil
+	}
+
+	var modelMsgs []string
+
+	for _, model := range models {
+		sizeGB := float64(model.Size) / (1024 * 1024 * 1024)
+		modelMsg := fmt.Sprintf("- **%s** (%.1f GB) - Modified: %s", model.Name, sizeGB, model.ModifiedAt.Format("2006-01-02 15:04:05"))
+		modelMsgs = append(modelMsgs, modelMsg)
+	}
+
+	content := fmt.Sprintf("# 📋 Available Models\n%s", strings.Join(modelMsgs, "\n"))
+	if err = markdown.Render(content); err != nil {
+		return fmt.Errorf("error caught while rendering response: %s", err.Error())
+	}
+
+	return nil
 }
 
 // Chat sends a chat request to the model API and processes the response

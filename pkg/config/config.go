@@ -34,6 +34,7 @@ var (
 	InfoMessage    = color.New(color.FgBlue)
 	SuccessMessage = color.New(color.FgGreen)
 	ErrorMessage   = color.New(color.FgRed)
+	WarningMessage = color.New(color.FgYellow)
 )
 
 // setupConfig initializes the configuration by setting the default values and writing the configuration file.

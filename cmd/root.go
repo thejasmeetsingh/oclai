@@ -11,13 +11,15 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/thejasmeetsingh/oclai/pkg/app"
 	"github.com/thejasmeetsingh/oclai/pkg/chat"
 	"github.com/thejasmeetsingh/oclai/pkg/config"
 )
 
 var (
-	infoMsg = config.InfoMessage
-	errMsg  = config.ErrorMessage
+	infoMsg    = config.InfoMessage
+	errMsg     = config.ErrorMessage
+	successMsg = config.SuccessMessage
 )
 
 // rootCmd is the main command for the CLI application.
@@ -42,6 +44,34 @@ var rootCmd = &cobra.Command{
 
 		// If no arguments were provided and no global flags were changed, show help
 		cmd.Help()
+	},
+}
+
+// Command for viewing ollama models
+var modelsCmd = &cobra.Command{
+	Use:   "models",
+	Short: "List available models",
+	Long:  "Display all models currently available in your local Ollama installation.",
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := app.ShowModels(); err != nil {
+			errMsg.Println("Error listing models:", err)
+			os.Exit(1)
+		}
+	},
+}
+
+// Command for checking ollama service status
+var statusCmd = &cobra.Command{
+	Use:   "status",
+	Short: "Check Ollama service status",
+	Long:  "Check if Ollama service is running and display connection information.",
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := app.CheckOllamaConnection(); err != nil {
+			errMsg.Println("Ollama Status:", err)
+			os.Exit(1)
+		}
+
+		successMsg.Println("✅ Ollama is running at:", config.OclaiConfig.BaseURL)
 	},
 }
 
@@ -85,7 +115,11 @@ func init() {
 	rootCmd.PersistentFlags().Func("model", "Set Default Model", setDefaultModel)
 
 	// Add the query subcommand
-	rootCmd.AddCommand(chat.Query)
+	rootCmd.AddCommand(
+		modelsCmd,
+		statusCmd,
+		chat.Query,
+	)
 
 	// Load configuration file
 	if err := config.LoadConfig(); err != nil {
