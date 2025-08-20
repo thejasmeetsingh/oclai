@@ -117,17 +117,15 @@ func ShowModels() error {
 		return err
 	}
 
-	warningMsg := config.WarningMessage
 	if len(models) == 0 {
-		warningMsg.Println("No models found. Please install a model using: ollama pull <model-name>")
-		return nil
+		return fmt.Errorf("no models found. Please install a model using: ollama pull <model-name>")
 	}
 
 	var modelMsgs []string
 
-	for _, model := range models {
+	for idx, model := range models {
 		sizeGB := float64(model.Size) / (1024 * 1024 * 1024)
-		modelMsg := fmt.Sprintf("- **%s** (%.1f GB) - Modified: %s", model.Name, sizeGB, model.ModifiedAt.Format("2006-01-02 15:04:05"))
+		modelMsg := fmt.Sprintf("%d. **%s** (%.1f GB) - Modified At: %s", idx+1, model.Name, sizeGB, model.ModifiedAt.Format("2006-01-02 15:04:05"))
 		modelMsgs = append(modelMsgs, modelMsg)
 	}
 

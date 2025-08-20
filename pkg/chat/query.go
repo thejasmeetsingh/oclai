@@ -18,12 +18,13 @@ var fileContents []string
 
 // Query is a subcommand for asking a query to the selected model.
 var Query = &cobra.Command{
-	Use:   "q [query]",
-	Short: "Ask a query to the model",
-	Long:  "Ask a query to the model. You can provide a query directly, pipe input from another command, or specify a file to analyze.",
-	Args:  cobra.MinimumNArgs(1),
+	Use:     "query [query]",
+	Aliases: []string{"q"},
+	Short:   "Ask a query to the model",
+	Long:    infoMsg.Sprint("Ask a query to the model. You can provide a query directly, pipe input from another command, or specify a file to analyze."),
+	Args:    cobra.MinimumNArgs(1),
 	Example: `
-		oclai q "Hey what's up"
+		oclai query "Hey what's up --model qwen3:latest"
 		cat /path/file.txt | oclai q "Summerize this file"
 		oclai q "Analyze this code" -f /path/main.py
 	`,

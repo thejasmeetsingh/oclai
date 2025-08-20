@@ -26,7 +26,7 @@ var (
 // It serves as the entry point for all CLI commands.
 var rootCmd = &cobra.Command{
 	Use:     "oclai",
-	Short:   infoMsg.Sprint("A completely offline agentic CLI"),
+	Short:   "A completely offline agentic CLI",
 	Long:    infoMsg.Sprint("An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."),
 	Example: `oclai q "What's the latest news of today"`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -51,7 +51,7 @@ var rootCmd = &cobra.Command{
 var modelsCmd = &cobra.Command{
 	Use:   "models",
 	Short: "List available models",
-	Long:  "Display all models currently available in your local Ollama installation.",
+	Long:  infoMsg.Sprint("Display all models currently available in your local Ollama installation."),
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := app.ShowModels(); err != nil {
 			errMsg.Println("Error listing models:", err)
@@ -64,7 +64,7 @@ var modelsCmd = &cobra.Command{
 var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Check Ollama service status",
-	Long:  "Check if Ollama service is running and display connection information.",
+	Long:  infoMsg.Sprint("Check if Ollama service is running and display connection information."),
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := app.CheckOllamaConnection(); err != nil {
 			errMsg.Println("Ollama Status:", err)
@@ -106,9 +106,8 @@ func setDefaultModel(arg string) error {
 }
 
 // init initializes the root command by:
-// 1. Adding persistent flags for baseURL and model
-// 2. Adding the query subcommand
-// 3. Loading the configuration file
+// - Adding persistent flags & subcommands.
+// - Loading the configuration file
 func init() {
 	// Add persistent flags to the root command
 	rootCmd.PersistentFlags().Func("baseURL", "Set Ollama BaseURL", setBaseURL)
@@ -119,6 +118,7 @@ func init() {
 		modelsCmd,
 		statusCmd,
 		chat.Query,
+		chat.Chat,
 	)
 
 	// Load configuration file
