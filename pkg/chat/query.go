@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/thejasmeetsingh/oclai/pkg/app"
 	"github.com/thejasmeetsingh/oclai/pkg/config"
@@ -21,7 +22,7 @@ var Query = &cobra.Command{
 	Use:     "query [query]",
 	Aliases: []string{"q"},
 	Short:   "Ask a query to the model",
-	Long:    infoMsg.Sprint("Ask a query to the model. You can provide a query directly, pipe input from another command, or specify a file to analyze."),
+	Long:    color.New(color.FgBlue, color.Bold).Sprint("Ask a query to the model. You can provide a query directly, pipe input from another command, or specify a file to analyze."),
 	Args:    cobra.MinimumNArgs(1),
 	Example: `
 		oclai query "Hey what's up --model qwen3:latest"
@@ -34,7 +35,7 @@ var Query = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// Join the query arguments into a single string.
 		query := strings.TrimSpace(strings.Join(args, " "))
-		errMsg := config.ErrorMessage
+		errMsg := color.New(color.FgRed)
 
 		if query == "" {
 			errMsg.Println("Please provide a query 😒")
@@ -58,7 +59,7 @@ var Query = &cobra.Command{
 		request := app.ModelRequest{
 			Model: config.OclaiConfig.DefaultModel,
 			Think: false,
-			Messages: []app.Message{{
+			Messages: &[]app.Message{{
 				Role:    app.User,
 				Content: query,
 			}},

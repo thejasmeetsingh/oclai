@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/thejasmeetsingh/oclai/pkg/config"
 	"github.com/thejasmeetsingh/oclai/pkg/markdown"
 )
@@ -38,10 +39,10 @@ type (
 
 	// ModelRequest represents a request to the model API
 	ModelRequest struct {
-		Model    string    `json:"model"`
-		Think    bool      `json:"think"`
-		Messages []Message `json:"messages"`
-		Format   string    `json:"format,omitempty"`
+		Model    string     `json:"model"`
+		Think    bool       `json:"think"`
+		Messages *[]Message `json:"messages"`
+		Format   string     `json:"format,omitempty"`
 	}
 
 	// ModelResponse represents the response from the model API
@@ -111,26 +112,29 @@ func ListModels() ([]ModelInfo, error) {
 }
 
 // Fetch models from ollama and display them in an appropriate format
-func ShowModels() error {
-	models, err := ListModels()
-	if err != nil {
-		return err
+func ShowModels(models *[]ModelInfo) error {
+	if models == nil {
+		newModels, err := ListModels()
+		if err != nil {
+			return err
+		}
+		models = &newModels
 	}
 
-	if len(models) == 0 {
+	if len(*models) == 0 {
 		return fmt.Errorf("no models found. Please install a model using: ollama pull <model-name>")
 	}
 
 	var modelMsgs []string
 
-	for idx, model := range models {
+	for idx, model := range *models {
 		sizeGB := float64(model.Size) / (1024 * 1024 * 1024)
 		modelMsg := fmt.Sprintf("%d. **%s** (%.1f GB) - Modified At: %s", idx+1, model.Name, sizeGB, model.ModifiedAt.Format("2006-01-02 15:04:05"))
 		modelMsgs = append(modelMsgs, modelMsg)
 	}
 
 	content := fmt.Sprintf("# 📋 Available Models\n%s", strings.Join(modelMsgs, "\n"))
-	if err = markdown.Render(content); err != nil {
+	if err := markdown.Render(content); err != nil {
 		return fmt.Errorf("error caught while rendering response: %s", err.Error())
 	}
 
@@ -159,14 +163,20 @@ func Chat(request ModelRequest) error {
 	}
 
 	if modelResponse.Done {
-		if err = markdown.Render(modelResponse.Message.Content); err != nil {
+		content := modelResponse.Message.Content
+		*request.Messages = append(*request.Messages, Message{
+			Role:    Assistant,
+			Content: content,
+		})
+
+		if err = markdown.Render(content); err != nil {
 			return fmt.Errorf("error caught while rendering response: %s", err.Error())
 		}
 
 		if modelResponse.TotalDuration > 0 {
 			duration := time.Duration(modelResponse.TotalDuration)
 			tokensPerSec := float64(modelResponse.EvalCount) / duration.Seconds()
-			config.SuccessMessage.Printf("✓ Generated %d tokens in %v (%.1f tokens/sec)\n\n",
+			color.New(color.FgGreen).Printf("✓ Generated %d tokens in %v (%.1f tokens/sec)\n\n",
 				modelResponse.EvalCount, duration, tokensPerSec)
 		}
 	}

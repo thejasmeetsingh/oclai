@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/thejasmeetsingh/oclai/pkg/app"
 	"github.com/thejasmeetsingh/oclai/pkg/chat"
@@ -17,9 +18,9 @@ import (
 )
 
 var (
-	infoMsg    = config.InfoMessage
-	errMsg     = config.ErrorMessage
-	successMsg = config.SuccessMessage
+	infoMsg    = color.New(color.FgBlue, color.Bold)
+	errMsg     = color.New(color.FgRed)
+	successMsg = color.New(color.FgGreen)
 )
 
 // rootCmd is the main command for the CLI application.
@@ -53,7 +54,7 @@ var modelsCmd = &cobra.Command{
 	Short: "List available models",
 	Long:  infoMsg.Sprint("Display all models currently available in your local Ollama installation."),
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := app.ShowModels(); err != nil {
+		if err := app.ShowModels(nil); err != nil {
 			errMsg.Println("Error listing models:", err)
 			os.Exit(1)
 		}

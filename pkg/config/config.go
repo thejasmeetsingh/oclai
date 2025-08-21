@@ -26,16 +26,8 @@ type Config struct {
 	File string `json:"file"`
 }
 
-var (
-	// OclaiConfig is a global variable that holds the application's configuration.
-	OclaiConfig Config
-
-	// Common color messages
-	InfoMessage    = color.New(color.FgBlue)
-	SuccessMessage = color.New(color.FgGreen)
-	ErrorMessage   = color.New(color.FgRed)
-	WarningMessage = color.New(color.FgYellow)
-)
+// OclaiConfig is a global variable that holds the application's configuration.
+var OclaiConfig Config
 
 // setupConfig initializes the configuration by setting the default values and writing the configuration file.
 func setupConfig() error {
@@ -82,7 +74,8 @@ func UpdateConfig() error {
 // DefaultModelCheck checks if the default model is set in the configuration.
 func DefaultModelCheck() error {
 	if OclaiConfig.DefaultModel == "" {
-		return fmt.Errorf("%s", ErrorMessage.Sprint("please select a default model 🤖")) // Return an error if the default model is not set
+		msg := color.New(color.FgRed).Sprint("please select a default model 🤖")
+		return fmt.Errorf("%s", msg) // Return an error if the default model is not set
 	}
 	return nil
 }
