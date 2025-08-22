@@ -103,6 +103,10 @@ func ListModels() ([]ModelInfo, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("ollama service returned status %d", resp.StatusCode)
+	}
+
 	var modelsResp ModelsResponse
 	if err := json.NewDecoder(resp.Body).Decode(&modelsResp); err != nil {
 		return nil, err
