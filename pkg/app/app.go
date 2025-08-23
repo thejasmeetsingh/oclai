@@ -17,8 +17,8 @@ import (
 )
 
 type (
-	// role represents the different message roles in the chat system
-	role string
+	// Role represents the different message roles in the chat system
+	Role string
 
 	// ToolCall represents a function call made by the assistant
 	ToolCall struct {
@@ -30,7 +30,7 @@ type (
 
 	// Message represents a chat message with role and content
 	Message struct {
-		Role      role       `json:"role"`
+		Role      Role       `json:"role"`
 		Content   string     `json:"content,omitempty"`
 		Thinking  string     `json:"thinking,omitempty"`
 		ToolName  string     `json:"tool_name,omitempty"`
@@ -73,10 +73,10 @@ type (
 )
 
 const (
-	System    role = "system"
-	User      role = "user"
-	Assistant role = "assistant"
-	Tool      role = "tool"
+	System    Role = "system"
+	User      Role = "user"
+	Assistant Role = "assistant"
+	Tool      Role = "tool"
 )
 
 // CheckOllamaConnection checks if the Ollama service is running
@@ -93,6 +93,13 @@ func CheckOllamaConnection() error {
 	}
 
 	return nil
+}
+
+func SystemPromptMessage() Message {
+	return Message{
+		Role:    System,
+		Content: "You are a helpful Assistant!",
+	}
 }
 
 // ListModels retrieves a list of available models from the Ollama service
@@ -115,18 +122,18 @@ func ListModels() ([]ModelInfo, error) {
 	return modelsResp.Models, nil
 }
 
-// Fetch models from ollama and display them in an appropriate format
-func ShowModels(models *[]ModelInfo) error {
+// Fetch models from ollama and return them in an appropriate format
+func ShowModels(models *[]ModelInfo) (string, error) {
 	if models == nil {
 		newModels, err := ListModels()
 		if err != nil {
-			return err
+			return "", err
 		}
 		models = &newModels
 	}
 
 	if len(*models) == 0 {
-		return fmt.Errorf("no models found. Please install a model using: ollama pull <model-name>")
+		return "", fmt.Errorf("no models found. Please install a model using: ollama pull <model-name>")
 	}
 
 	var modelMsgs []string
@@ -138,52 +145,48 @@ func ShowModels(models *[]ModelInfo) error {
 	}
 
 	content := fmt.Sprintf("# 📋 Available Models\n%s", strings.Join(modelMsgs, "\n"))
-	if err := markdown.Render(content); err != nil {
-		return fmt.Errorf("error caught while rendering response: %s", err.Error())
-	}
-
-	return nil
+	return markdown.Render(content)
 }
 
 // Chat sends a chat request to the model API and processes the response
-func Chat(request ModelRequest) error {
+func Chat(request ModelRequest, showStats bool) (string, error) {
 	body := &bytes.Buffer{}
 	encoder := json.NewEncoder(body)
 	encoder.Encode(request)
 
 	response, err := http.Post(config.OclaiConfig.BaseURL+"/api/chat", "application/json", body)
 	if err != nil {
-		return nil
+		return "", nil
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return fmt.Errorf("API request failed with status %d", response.StatusCode)
+		return "", fmt.Errorf("API request failed with status %d", response.StatusCode)
 	}
 
 	var modelResponse ModelResponse
 	if err = json.NewDecoder(response.Body).Decode(&modelResponse); err != nil {
-		return fmt.Errorf("error while parsing the model response: %s", err.Error())
+		return "", fmt.Errorf("error while parsing the model response: %s", err.Error())
 	}
 
 	if modelResponse.Done {
 		content := modelResponse.Message.Content
-		*request.Messages = append(*request.Messages, Message{
-			Role:    Assistant,
-			Content: content,
-		})
-
-		if err = markdown.Render(content); err != nil {
-			return fmt.Errorf("error caught while rendering response: %s", err.Error())
+		result, err := markdown.Render(content)
+		if err != nil {
+			return "", err
 		}
 
-		if modelResponse.TotalDuration > 0 {
+		if showStats && modelResponse.TotalDuration > 0 {
 			duration := time.Duration(modelResponse.TotalDuration)
 			tokensPerSec := float64(modelResponse.EvalCount) / duration.Seconds()
-			color.New(color.FgGreen).Printf("✓ Generated %d tokens in %v (%.1f tokens/sec)\n\n",
+			stat := color.New(color.FgGreen).Sprintf("✓ Generated %d tokens in %v (%.1f tokens/sec)\n\n",
 				modelResponse.EvalCount, duration, tokensPerSec)
+
+			result = fmt.Sprintf("%s\n%s", result, stat)
 		}
+
+		return result, nil
 	}
 
-	return nil
+	return "", nil
 }
