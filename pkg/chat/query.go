@@ -66,10 +66,13 @@ var Query = &cobra.Command{
 		}
 
 		// Send a one-off chat request to Ollama API
-		if err := app.Chat(request); err != nil {
+		content, err := app.Chat(request, true)
+		if err != nil {
 			errMsg.Println(err)
 			os.Exit(1)
 		}
+
+		fmt.Println(content)
 	},
 }
 

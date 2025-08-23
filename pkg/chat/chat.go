@@ -2,10 +2,12 @@ package chat
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/thejasmeetsingh/oclai/pkg/app"
@@ -26,17 +28,20 @@ var Chat = &cobra.Command{
 		model := config.OclaiConfig.DefaultModel
 		errMsg := color.New(color.FgRed)
 
-		if model == "" {
-			models, err := app.ListModels()
-			if err != nil {
-				errMsg.Println("Error listing models:", err)
-				os.Exit(1)
-			}
+		models, err := app.ListModels()
+		if err != nil {
+			errMsg.Println("Error listing models:", err)
+			os.Exit(1)
+		}
 
-			if err = app.ShowModels(&models); err != nil {
+		if model == "" {
+			modelsContent, err := app.ShowModels(&models)
+			if err != nil {
 				errMsg.Println(err)
 				os.Exit(1)
 			}
+
+			fmt.Println(modelsContent)
 
 			var choice int
 
@@ -64,8 +69,20 @@ var Chat = &cobra.Command{
 			model = models[choice-1].Name
 		}
 
-		if err := startInteractiveSession(model); err != nil {
-			errMsg.Println("Error caught in interactive session:", err)
+		modelRequest := app.ModelRequest{
+			Model:    model,
+			Think:    false,
+			Messages: &[]app.Message{app.SystemPromptMessage()},
+		}
+
+		program := tea.NewProgram(
+			initSession(modelRequest, models),
+			tea.WithAltScreen(),
+			tea.WithMouseCellMotion(),
+		)
+
+		if _, err := program.Run(); err != nil {
+			errMsg.Println(err.Error())
 			os.Exit(1)
 		}
 	},

@@ -54,10 +54,12 @@ var modelsCmd = &cobra.Command{
 	Short: "List available models",
 	Long:  infoMsg.Sprint("Display all models currently available in your local Ollama installation."),
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := app.ShowModels(nil); err != nil {
+		content, err := app.ShowModels(nil)
+		if err != nil {
 			errMsg.Println("Error listing models:", err)
 			os.Exit(1)
 		}
+		fmt.Println(content)
 	},
 }
 
