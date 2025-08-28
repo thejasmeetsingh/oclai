@@ -11,7 +11,7 @@ func Render(content string) (string, error) {
 	// Create a terminal renderer with auto-detected style
 	renderer, err := glamour.NewTermRenderer(
 		// Automatically pick dark or light style based on terminal
-		glamour.WithAutoStyle(),
+		glamour.WithStandardStyle("dark"),
 		// Set word wrap to 80 characters
 		glamour.WithWordWrap(80),
 	)
