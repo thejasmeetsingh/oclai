@@ -12,9 +12,8 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/thejasmeetsingh/oclai/pkg/app"
-	"github.com/thejasmeetsingh/oclai/pkg/chat"
-	"github.com/thejasmeetsingh/oclai/pkg/config"
+	"github.com/thejasmeetsingh/oclai/app"
+	"github.com/thejasmeetsingh/oclai/app/chat"
 )
 
 var (
@@ -74,7 +73,7 @@ var statusCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		successMsg.Println("✅ Ollama is running at:", config.OclaiConfig.BaseURL)
+		successMsg.Println("✅ Ollama is running at:", app.OclaiConfig.BaseURL)
 	},
 }
 
@@ -92,8 +91,8 @@ func setBaseURL(arg string) error {
 	}
 
 	// Update the configuration with the new base URL
-	config.OclaiConfig.BaseURL = baseURL.String()
-	return config.UpdateConfig()
+	app.OclaiConfig.BaseURL = baseURL.String()
+	return app.UpdateConfig()
 }
 
 // setDefaultModel sets the default model to be used by the CLI.
@@ -104,8 +103,8 @@ func setDefaultModel(arg string) error {
 	}
 
 	// Update the configuration with the new default model
-	config.OclaiConfig.DefaultModel = strings.TrimSpace(arg)
-	return config.UpdateConfig()
+	app.OclaiConfig.DefaultModel = strings.TrimSpace(arg)
+	return app.UpdateConfig()
 }
 
 // init initializes the root command by:
@@ -125,7 +124,7 @@ func init() {
 	)
 
 	// Load configuration file
-	if err := config.LoadConfig(); err != nil {
+	if err := app.LoadConfig(); err != nil {
 		errMsg.Println("Failed to load configuration: ", err)
 		os.Exit(1)
 	}

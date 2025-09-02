@@ -12,8 +12,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/fatih/color"
-	"github.com/thejasmeetsingh/oclai/pkg/app"
-	"github.com/thejasmeetsingh/oclai/pkg/markdown"
+	"github.com/thejasmeetsingh/oclai/app"
 )
 
 const (
@@ -75,7 +74,7 @@ func userPromptText() string {
 }
 
 func getMarkdownString(content string) string {
-	contentMD, err := markdown.Render(content)
+	contentMD, err := app.RenderMD(content)
 	if err != nil {
 		color.New(color.FgRed).Print(err.Error())
 		os.Exit(1)
@@ -208,25 +207,16 @@ func handleModelSwitch(s *session, newModel string) (*session, tea.Cmd) {
 			_type:   errMsg,
 			content: "Model does not exists",
 		})
-		return s, nil
+	} else {
+		s.modelRequest.Model = newModel
+		s.updateSessionMessages(sessionMessage{
+			_type:   successMsg,
+			content: "✓ Switched to model: " + newModel,
+		})
 	}
 
-	s.modelRequest.Model = newModel
-	s.updateSessionMessages(sessionMessage{
-		_type:   successMsg,
-		content: "✓ Switched to model: " + newModel,
-	})
 	s.clearInput()
-
 	return s, nil
-}
-
-func (s *session) addExitMsg() {
-	s.updateSessionMessages(sessionMessage{
-		_type:   successMsg,
-		content: "👋 Goodbye!",
-	})
-	s.clearInput()
 }
 
 func (s *session) updateSuggestions() {
@@ -307,7 +297,6 @@ func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":
-			s.addExitMsg()
 			return s, tea.Quit
 
 		case "down":
@@ -329,7 +318,6 @@ func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			if input == "exit" || input == "quit" {
-				s.addExitMsg()
 				return s, tea.Quit
 			}
 

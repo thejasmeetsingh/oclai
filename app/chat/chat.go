@@ -10,8 +10,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/thejasmeetsingh/oclai/pkg/app"
-	"github.com/thejasmeetsingh/oclai/pkg/config"
+	"github.com/thejasmeetsingh/oclai/app"
 )
 
 var Chat = &cobra.Command{
@@ -25,7 +24,7 @@ var Chat = &cobra.Command{
 		oclai chat --model gemma3:latest
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		model := config.OclaiConfig.DefaultModel
+		model := app.OclaiConfig.DefaultModel
 		errMsg := color.New(color.FgRed)
 
 		models, err := app.ListModels()
@@ -85,5 +84,7 @@ var Chat = &cobra.Command{
 			errMsg.Println(err.Error())
 			os.Exit(1)
 		}
+
+		fmt.Println("👋 Goodbye!")
 	},
 }

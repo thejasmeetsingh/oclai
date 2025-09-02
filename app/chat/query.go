@@ -11,8 +11,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/thejasmeetsingh/oclai/pkg/app"
-	"github.com/thejasmeetsingh/oclai/pkg/config"
+	"github.com/thejasmeetsingh/oclai/app"
 )
 
 var fileContents []string
@@ -30,7 +29,7 @@ var Query = &cobra.Command{
 		oclai q "Analyze this code" -f /path/main.py
 	`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return config.DefaultModelCheck()
+		return app.DefaultModelCheck()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		// Join the query arguments into a single string.
@@ -57,7 +56,7 @@ var Query = &cobra.Command{
 		}
 
 		request := app.ModelRequest{
-			Model: config.OclaiConfig.DefaultModel,
+			Model: app.OclaiConfig.DefaultModel,
 			Think: false,
 			Messages: &[]app.Message{{
 				Role:    app.User,

@@ -1,4 +1,4 @@
-// Package app provides functionality for interacting with the Ollama service,
+// Provides functionality for interacting with the Ollama service,
 // including checking connections, listing models, and making chat requests.
 
 package app
@@ -12,8 +12,6 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/thejasmeetsingh/oclai/pkg/config"
-	"github.com/thejasmeetsingh/oclai/pkg/markdown"
 )
 
 type (
@@ -81,7 +79,7 @@ const (
 
 // CheckOllamaConnection checks if the Ollama service is running
 func CheckOllamaConnection() error {
-	url := config.OclaiConfig.BaseURL
+	url := OclaiConfig.BaseURL
 	resp, err := http.Get(url + "/api/tags")
 	if err != nil {
 		return fmt.Errorf("failed to connect to Ollama service at %s: %v\nPlease ensure Ollama is running", url, err)
@@ -104,7 +102,7 @@ func SystemPromptMessage() Message {
 
 // ListModels retrieves a list of available models from the Ollama service
 func ListModels() ([]ModelInfo, error) {
-	resp, err := http.Get(config.OclaiConfig.BaseURL + "/api/tags")
+	resp, err := http.Get(OclaiConfig.BaseURL + "/api/tags")
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +143,7 @@ func ShowModels(models *[]ModelInfo) (string, error) {
 	}
 
 	content := fmt.Sprintf("# 📋 Available Models\n%s", strings.Join(modelMsgs, "\n"))
-	return markdown.Render(content)
+	return RenderMD(content)
 }
 
 // Chat sends a chat request to the model API and processes the response
@@ -154,7 +152,7 @@ func Chat(request ModelRequest, showStats bool) (string, error) {
 	encoder := json.NewEncoder(body)
 	encoder.Encode(request)
 
-	response, err := http.Post(config.OclaiConfig.BaseURL+"/api/chat", "application/json", body)
+	response, err := http.Post(OclaiConfig.BaseURL+"/api/chat", "application/json", body)
 	if err != nil {
 		return "", nil
 	}
@@ -171,7 +169,7 @@ func Chat(request ModelRequest, showStats bool) (string, error) {
 
 	if modelResponse.Done {
 		content := modelResponse.Message.Content
-		result, err := markdown.Render(content)
+		result, err := RenderMD(content)
 		if err != nil {
 			return "", err
 		}

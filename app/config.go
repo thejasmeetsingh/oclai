@@ -2,7 +2,7 @@
 // It defines the Config struct and provides functions to load, update, and check the configuration.
 // The configuration is stored in a JSON file located in the user's home directory.
 
-package config
+package app
 
 import (
 	"encoding/json"
