@@ -2,22 +2,29 @@ package chat
 
 import (
 	"fmt"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/fatih/color"
 	"github.com/thejasmeetsingh/oclai/pkg/app"
+	"github.com/thejasmeetsingh/oclai/pkg/markdown"
 )
 
 const (
-	info      messageType = "info"
-	success   messageType = "success"
-	eror      messageType = "error"
-	user      messageType = "user"
-	assistant messageType = "assistant"
+	height int = 20
+	width  int = 100
+
+	infoMsg    messageType = "info"
+	successMsg messageType = "success"
+	errMsg     messageType = "error"
+	usrMsg     messageType = "user"
+	aiMsg      messageType = "ai"
 )
 
 type (
@@ -29,12 +36,13 @@ type (
 	}
 
 	session struct {
-		textInput    textinput.Model
-		spinner      spinner.Model
-		modelRequest app.ModelRequest
-		models       []app.ModelInfo
-		messages     []sessionMessage
-		waiting      bool
+		textInput        textinput.Model
+		spinner          spinner.Model
+		vp               viewport.Model
+		modelRequest     app.ModelRequest
+		messagesMarkdown string
+		models           []app.ModelInfo
+		waiting          bool
 	}
 
 	commandInfo struct {
@@ -43,34 +51,37 @@ type (
 	}
 )
 
-var (
-	infoMsg    = color.New(color.FgBlue)
-	successMsg = color.New(color.FgGreen)
-	errMsg     = color.New(color.FgRed, color.Bold)
-	warningMsg = color.New(color.FgYellow)
-
-	subcommands = map[string]commandInfo{
-		"/help": {
-			name:        "/help",
-			description: "Show help message",
-		},
-		"/clear": {
-			name:        "/clear",
-			description: "Clear the chat history",
-		},
-		"/models": {
-			name:        "/models",
-			description: "List available models",
-		},
-		"/model": {
-			name:        "/model",
-			description: "Switch to a different model. Usage: /model <modelName>",
-		},
-	}
-)
+var subcommands = map[string]commandInfo{
+	"/help": {
+		name:        "/help",
+		description: "Show help message",
+	},
+	"/clear": {
+		name:        "/clear",
+		description: "Clear the chat history",
+	},
+	"/models": {
+		name:        "/models",
+		description: "List available models",
+	},
+	"/model": {
+		name:        "/model",
+		description: "Switch to a different model. Usage: /model <modelName>",
+	},
+}
 
 func userPromptText() string {
-	return lipgloss.NewStyle().Foreground(lipgloss.Color("33")).Render("💬 You: ")
+	return "💬 You: "
+}
+
+func getMarkdownString(content string) string {
+	contentMD, err := markdown.Render(content)
+	if err != nil {
+		color.New(color.FgRed).Print(err.Error())
+		os.Exit(1)
+	}
+
+	return contentMD
 }
 
 func initSession(modelRequest app.ModelRequest, models []app.ModelInfo) *session {
@@ -78,20 +89,23 @@ func initSession(modelRequest app.ModelRequest, models []app.ModelInfo) *session
 	ti.Placeholder = "Type your message here... (try typing '/' for commands)"
 	ti.Prompt = userPromptText()
 	ti.Focus()
-	ti.Width = 80
+	ti.Width = width
 	ti.ShowSuggestions = true
 
 	spinr := spinner.New()
-	spinr.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	spinr.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#c90076"))
 	spinr.Spinner = spinner.Points
 
+	vp := viewport.New(width, height)
+
 	return &session{
-		textInput:    ti,
-		spinner:      spinr,
-		models:       models,
-		modelRequest: modelRequest,
-		messages:     make([]sessionMessage, 0),
-		waiting:      false,
+		textInput:        ti,
+		spinner:          spinr,
+		vp:               vp,
+		models:           models,
+		modelRequest:     modelRequest,
+		messagesMarkdown: "",
+		waiting:          false,
 	}
 }
 
@@ -108,22 +122,39 @@ func (s *session) addModelMessage(message app.Message) {
 	*s.modelRequest.Messages = append(*s.modelRequest.Messages, message)
 }
 
-func (s *session) addSessionMessage(message sessionMessage) {
-	s.messages = append(s.messages, message)
+func (s *session) updateSessionMessages(message sessionMessage) {
+	timestamp := time.Now().Format(time.Kitchen)
+
+	switch message._type {
+	case successMsg:
+		message.content = fmt.Sprintf("✨ %s", message.content)
+	case errMsg:
+		message.content = fmt.Sprintf("⛔ %s", message.content)
+	case usrMsg:
+		message.content = getMarkdownString(fmt.Sprintf("**[%s] You:** *%s*", timestamp, message.content))
+	case aiMsg:
+		message.content = getMarkdownString(fmt.Sprintf("**[%s] AI:** ", timestamp)) + message.content
+	}
+
+	lineBreak := getMarkdownString("--------")
+	s.messagesMarkdown += message.content + lineBreak
+
+	s.vp.SetContent(s.messagesMarkdown)
+	s.vp.GotoBottom()
 }
 
 func handleHelp(s *session) (*session, tea.Cmd) {
-	helpText := "📚 Available Commands:\n\n"
+	helpText := "# 📚 Available Commands:\n\n"
 	for _, cmd := range subcommands {
-		helpText += fmt.Sprintf(" %s - %s\n", cmd.name, cmd.description)
+		helpText += fmt.Sprintf("- %s : %s\n", cmd.name, cmd.description)
 	}
-	helpText += "\n💡 Tips:\n"
-	helpText += "  • Type / to see available commands with autocomplete\n"
-	helpText += "  • Type 'exit' or 'quit' to leave"
+	helpText += "\n## 💡 Tips:\n"
+	helpText += "- Type / to see available commands with autocomplete\n"
+	helpText += "- Type 'exit' or 'quit' to leave"
 
-	s.addSessionMessage(sessionMessage{
-		_type:   info,
-		content: helpText,
+	s.updateSessionMessages(sessionMessage{
+		_type:   infoMsg,
+		content: getMarkdownString(helpText),
 	})
 	s.clearInput()
 
@@ -132,10 +163,10 @@ func handleHelp(s *session) (*session, tea.Cmd) {
 
 func handleClearHistory(s *session) (*session, tea.Cmd) {
 	s.modelRequest.Messages = &[]app.Message{app.SystemPromptMessage()}
-	s.messages = make([]sessionMessage, 0)
+	s.messagesMarkdown = ""
 
-	s.addSessionMessage(sessionMessage{
-		_type:   success,
+	s.updateSessionMessages(sessionMessage{
+		_type:   successMsg,
 		content: "Chat History cleared! 🧹",
 	})
 	s.clearInput()
@@ -146,15 +177,15 @@ func handleClearHistory(s *session) (*session, tea.Cmd) {
 func handleModelListing(s *session) (*session, tea.Cmd) {
 	modelsContent, err := app.ShowModels(&s.models)
 	if err != nil {
-		s.addSessionMessage(sessionMessage{
-			_type:   eror,
+		s.updateSessionMessages(sessionMessage{
+			_type:   errMsg,
 			content: err.Error(),
 		})
 		return s, nil
 	}
 
-	s.addSessionMessage(sessionMessage{
-		_type:   info,
+	s.updateSessionMessages(sessionMessage{
+		_type:   infoMsg,
 		content: modelsContent,
 	})
 	s.clearInput()
@@ -173,16 +204,16 @@ func handleModelSwitch(s *session, newModel string) (*session, tea.Cmd) {
 	}
 
 	if !isValid {
-		s.addSessionMessage(sessionMessage{
-			_type:   eror,
+		s.updateSessionMessages(sessionMessage{
+			_type:   errMsg,
 			content: "Model does not exists",
 		})
 		return s, nil
 	}
 
 	s.modelRequest.Model = newModel
-	s.addSessionMessage(sessionMessage{
-		_type:   success,
+	s.updateSessionMessages(sessionMessage{
+		_type:   successMsg,
 		content: "✓ Switched to model: " + newModel,
 	})
 	s.clearInput()
@@ -191,8 +222,8 @@ func handleModelSwitch(s *session, newModel string) (*session, tea.Cmd) {
 }
 
 func (s *session) addExitMsg() {
-	s.addSessionMessage(sessionMessage{
-		_type:   success,
+	s.updateSessionMessages(sessionMessage{
+		_type:   successMsg,
 		content: "👋 Goodbye!",
 	})
 	s.clearInput()
@@ -235,8 +266,8 @@ func (s *session) handleCommand(command string) (*session, tea.Cmd) {
 		}
 	}
 
-	s.addSessionMessage(sessionMessage{
-		_type:   eror,
+	s.updateSessionMessages(sessionMessage{
+		_type:   errMsg,
 		content: fmt.Sprintf("Unknown command: %s. Type '/help' for available commands.", cmd),
 	})
 	s.clearInput()
@@ -247,8 +278,8 @@ func (s *session) handleCommand(command string) (*session, tea.Cmd) {
 func (s *session) sendChatRequest() {
 	response, err := app.Chat(s.modelRequest, false)
 	if err != nil {
-		s.addSessionMessage(sessionMessage{
-			_type:   eror,
+		s.updateSessionMessages(sessionMessage{
+			_type:   errMsg,
 			content: err.Error(),
 		})
 		return
@@ -258,8 +289,8 @@ func (s *session) sendChatRequest() {
 		Role:    app.Assistant,
 		Content: response,
 	})
-	s.addSessionMessage(sessionMessage{
-		_type:   assistant,
+	s.updateSessionMessages(sessionMessage{
+		_type:   aiMsg,
 		content: response,
 	})
 
@@ -267,7 +298,10 @@ func (s *session) sendChatRequest() {
 }
 
 func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
+	var (
+		cmd  tea.Cmd
+		cmds []tea.Cmd
+	)
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -275,6 +309,14 @@ func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			s.addExitMsg()
 			return s, tea.Quit
+
+		case "down":
+			s.vp.ScrollDown(1)
+			return s, nil
+
+		case "up":
+			s.vp.ScrollUp(1)
+			return s, nil
 
 		case "enter":
 			if s.waiting {
@@ -299,8 +341,8 @@ func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				Role:    app.User,
 				Content: input,
 			})
-			s.addSessionMessage(sessionMessage{
-				_type:   user,
+			s.updateSessionMessages(sessionMessage{
+				_type:   usrMsg,
 				content: input,
 			})
 
@@ -319,52 +361,47 @@ func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	prevValue := s.textInput.Value()
 	s.textInput, cmd = s.textInput.Update(msg)
+	cmds = append(cmds, cmd)
 
 	if s.textInput.Value() != prevValue {
 		s.updateSuggestions()
 	}
 
-	return s, cmd
+	s.vp, cmd = s.vp.Update(msg)
+	cmds = append(cmds, cmd)
+
+	return s, tea.Batch(cmds...)
 }
 
 func (s *session) View() string {
-	var output strings.Builder
+	var (
+		output strings.Builder
 
-	output.WriteString(successMsg.Sprintf("🚀 Starting interactive session with %s\n\n", s.modelRequest.Model))
-	output.WriteString(warningMsg.Sprint("Type 'exit', 'quit', or press Ctrl+C to end the session\n\n"))
-	output.WriteString(warningMsg.Sprint("Type '/help' for available commands\n\n"))
-	output.WriteString(strings.Repeat("-", 70) + "\n\n")
+		// Sections
+		top    string
+		middle string
+		bottom string
+	)
 
-	if len(s.messages) == 0 {
-		output.WriteString(infoMsg.Sprint("Start the conversation by typing a message below!\n\n"))
+	startupTxt := fmt.Sprintf("# 🚀 Starting interactive session with *%s*\n", s.modelRequest.Model)
+	startupTxt += "- Type `exit`, `quit`, or press `Ctrl+C` to end the session.\n"
+	startupTxt += "- Type `/help` for available commands."
+
+	top = getMarkdownString(startupTxt)
+
+	if s.messagesMarkdown == "" {
+		middle = getMarkdownString("*Start the conversation by typing a message below!*")
 	} else {
-		for idx := 0; idx < len(s.messages); idx++ {
-			msg := s.messages[idx]
-
-			switch msg._type {
-			case user:
-				output.WriteString(fmt.Sprintf("%s%s\n\n", userPromptText(), msg.content))
-			case assistant:
-				output.WriteString(fmt.Sprintf("🤖 %s\n", s.modelRequest.Model))
-				output.WriteString(msg.content)
-			case info:
-				output.WriteString(infoMsg.Sprint(msg.content) + "\n\n")
-			case success:
-				output.WriteString(successMsg.Sprint(msg.content) + "\n\n")
-			case eror:
-				output.WriteString(errMsg.Sprint(msg.content) + "\n\n")
-			}
-		}
-		output.WriteString("\n")
+		middle = s.vp.View()
 	}
-
-	output.WriteString(strings.Repeat("-", 70) + "\n\n")
 
 	if s.waiting {
-		output.WriteString(fmt.Sprintf("Thinking %s", s.spinner.View()))
+		bottom = lipgloss.NewStyle().Bold(true).Render(fmt.Sprintf("Thinking %s", s.spinner.View()))
 	} else {
-		output.WriteString(s.textInput.View())
+		bottom = s.textInput.View()
 	}
+
+	output.WriteString(top + "\n\n" + middle + "\n\n" + bottom)
 
 	return output.String()
 }
