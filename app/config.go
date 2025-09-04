@@ -26,8 +26,12 @@ type Config struct {
 	File string `json:"file"`
 }
 
-// OclaiConfig is a global variable that holds the application's configuration.
-var OclaiConfig Config
+var (
+	// OclaiConfig is a global variable that holds the application's configuration.
+	OclaiConfig Config
+
+	McpClient string
+)
 
 // setupConfig initializes the configuration by setting the default values and writing the configuration file.
 func setupConfig() error {
