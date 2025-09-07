@@ -276,7 +276,7 @@ func (s *session) sendChatRequest() {
 	}
 
 	s.addModelMessage(app.Message{
-		Role:    app.Assistant,
+		Role:    app.AssistantRole,
 		Content: response,
 	})
 	s.updateSessionMessages(sessionMessage{
@@ -326,7 +326,7 @@ func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			s.addModelMessage(app.Message{
-				Role:    app.User,
+				Role:    app.UserRole,
 				Content: input,
 			})
 			s.updateSessionMessages(sessionMessage{

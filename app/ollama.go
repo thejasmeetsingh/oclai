@@ -15,8 +15,22 @@ import (
 )
 
 type (
-	// Role represents the different message roles in the chat system
-	Role string
+	Parameter struct {
+		ParameterType string         `json:"type"`
+		Properties    map[string]any `json:"properties"`
+		Required      []string       `json:"required"`
+	}
+
+	Function struct {
+		Name        string    `json:"name"`
+		Description string    `json:"description"`
+		Parameter   Parameter `json:"parameters"`
+	}
+
+	Tool struct {
+		ToolType string   `json:"type"`
+		Function Function `json:"function"`
+	}
 
 	// ToolCall represents a function call made by the assistant
 	ToolCall struct {
@@ -28,7 +42,7 @@ type (
 
 	// Message represents a chat message with role and content
 	Message struct {
-		Role      Role       `json:"role"`
+		Role      string     `json:"role"`
 		Content   string     `json:"content,omitempty"`
 		Thinking  string     `json:"thinking,omitempty"`
 		ToolName  string     `json:"tool_name,omitempty"`
@@ -39,8 +53,9 @@ type (
 	ModelRequest struct {
 		Model    string     `json:"model"`
 		Think    bool       `json:"think"`
-		Messages *[]Message `json:"messages"`
 		Format   string     `json:"format,omitempty"`
+		Messages *[]Message `json:"messages"`
+		Tools    []Tool     `json:"tools,omitempty"`
 	}
 
 	// ModelResponse represents the response from the model API
@@ -71,10 +86,10 @@ type (
 )
 
 const (
-	System    Role = "system"
-	User      Role = "user"
-	Assistant Role = "assistant"
-	Tool      Role = "tool"
+	SystemRole    string = "system"
+	UserRole      string = "user"
+	AssistantRole string = "assistant"
+	ToolRole      string = "tool"
 )
 
 // CheckOllamaConnection checks if the Ollama service is running
@@ -95,7 +110,7 @@ func CheckOllamaConnection() error {
 
 func SystemPromptMessage() Message {
 	return Message{
-		Role:    System,
+		Role:    SystemRole,
 		Content: "You are a helpful Assistant!",
 	}
 }

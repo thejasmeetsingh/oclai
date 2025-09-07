@@ -59,7 +59,7 @@ var Query = &cobra.Command{
 			Model: app.OclaiConfig.DefaultModel,
 			Think: false,
 			Messages: &[]app.Message{{
-				Role:    app.User,
+				Role:    app.UserRole,
 				Content: query,
 			}},
 		}

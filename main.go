@@ -1,10 +1,7 @@
 package main
 
-import (
-	"github.com/thejasmeetsingh/oclai/tools"
-)
+import "github.com/thejasmeetsingh/oclai/cmd"
 
 func main() {
-	// cmd.Execute()
-	tools.ListTools()
+	cmd.Execute()
 }
