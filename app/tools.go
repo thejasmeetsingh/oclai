@@ -1,4 +1,4 @@
-package mcp
+package app
 
 import (
 	"context"
@@ -6,18 +6,17 @@ import (
 	"fmt"
 	"strings"
 
-	goMCP "github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/thejasmeetsingh/oclai/app"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-func ListTools(ctx context.Context, cs *goMCP.ClientSession) ([]*app.Tool, error) {
+func ListTools(ctx context.Context, cs *mcp.ClientSession) ([]*Tool, error) {
 	mcpTools, err := cs.ListTools(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var tools []*app.Tool
-	var params app.Parameter
+	var tools []*Tool
+	var params Parameter
 
 	for _, tool := range mcpTools.Tools {
 		inputSchema, err := tool.InputSchema.MarshalJSON()
@@ -30,9 +29,9 @@ func ListTools(ctx context.Context, cs *goMCP.ClientSession) ([]*app.Tool, error
 			return nil, err
 		}
 
-		tools = append(tools, &app.Tool{
+		tools = append(tools, &Tool{
 			ToolType: "function",
-			Function: app.Function{
+			Function: Function{
 				Name:        tool.Name,
 				Description: tool.Description,
 				Parameter:   params,
@@ -43,7 +42,7 @@ func ListTools(ctx context.Context, cs *goMCP.ClientSession) ([]*app.Tool, error
 	return tools, nil
 }
 
-func CallTool(ctx context.Context, cs *goMCP.ClientSession, params *goMCP.CallToolParams) (string, error) {
+func CallTool(ctx context.Context, cs *mcp.ClientSession, params *mcp.CallToolParams) (string, error) {
 	result, err := cs.CallTool(ctx, params)
 	if err != nil {
 		return "", err
@@ -56,7 +55,7 @@ func CallTool(ctx context.Context, cs *goMCP.ClientSession, params *goMCP.CallTo
 	var toolResults []string
 
 	for _, content := range result.Content {
-		toolResults = append(toolResults, content.(*goMCP.TextContent).Text)
+		toolResults = append(toolResults, content.(*mcp.TextContent).Text)
 	}
 
 	return strings.Join(toolResults, "."), nil

@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 
 	"github.com/fatih/color"
-	"github.com/modelcontextprotocol/go-sdk/mcp"
+	goMCP "github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/spf13/viper"
 )
 
@@ -31,7 +31,7 @@ var (
 	// OclaiConfig is a global variable that holds the application's configuration.
 	OclaiConfig Config
 
-	McpClient = mcp.NewClient(&mcp.Implementation{Name: "oclai", Version: "v1.0.0"}, nil)
+	McpClient = goMCP.NewClient(&goMCP.Implementation{Name: "oclai", Version: "v1.0.0"}, nil)
 )
 
 // setupConfig initializes the configuration by setting the default values and writing the configuration file.
