@@ -11,6 +11,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/thejasmeetsingh/oclai/app"
+	"github.com/thejasmeetsingh/oclai/ollama"
 )
 
 var Chat = &cobra.Command{
@@ -27,14 +28,14 @@ var Chat = &cobra.Command{
 		model := app.OclaiConfig.DefaultModel
 		errMsg := color.New(color.FgRed)
 
-		models, err := app.ListModels()
+		models, err := ollama.ListModels(app.OclaiConfig.BaseURL)
 		if err != nil {
 			errMsg.Println("Error listing models:", err)
 			os.Exit(1)
 		}
 
 		if model == "" {
-			modelsContent, err := app.ShowModels(&models)
+			modelsContent, err := ollama.ShowModels(app.OclaiConfig.BaseURL, &models)
 			if err != nil {
 				errMsg.Println(err)
 				os.Exit(1)
@@ -68,10 +69,10 @@ var Chat = &cobra.Command{
 			model = models[choice-1].Name
 		}
 
-		modelRequest := app.ModelRequest{
+		modelRequest := ollama.ModelRequest{
 			Model:    model,
 			Think:    false,
-			Messages: &[]app.Message{app.SystemPromptMessage()},
+			Messages: &[]ollama.Message{ollama.SystemPromptMessage()},
 		}
 
 		program := tea.NewProgram(

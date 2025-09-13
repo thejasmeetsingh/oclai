@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/thejasmeetsingh/oclai/app"
 	"github.com/thejasmeetsingh/oclai/app/chat"
+	"github.com/thejasmeetsingh/oclai/ollama"
 )
 
 var (
@@ -53,7 +54,7 @@ var modelsCmd = &cobra.Command{
 	Short: "List available models",
 	Long:  infoMsg.Sprint("Display all models currently available in your local Ollama installation."),
 	Run: func(cmd *cobra.Command, args []string) {
-		content, err := app.ShowModels(nil)
+		content, err := ollama.ShowModels(app.OclaiConfig.BaseURL, nil)
 		if err != nil {
 			errMsg.Println("Error listing models:", err)
 			os.Exit(1)
@@ -68,7 +69,7 @@ var statusCmd = &cobra.Command{
 	Short: "Check Ollama service status",
 	Long:  infoMsg.Sprint("Check if Ollama service is running and display connection information."),
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := app.CheckOllamaConnection(); err != nil {
+		if err := ollama.CheckOllamaConnection(app.OclaiConfig.BaseURL); err != nil {
 			errMsg.Println("Ollama Status:", err)
 			os.Exit(1)
 		}

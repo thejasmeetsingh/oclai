@@ -1,14 +1,14 @@
 // Provides functionality to render markdown content in the terminal with styling.
 
-package app
+package utils
 
 import (
 	"github.com/charmbracelet/glamour"
 )
 
-// Render takes a markdown content string and returns it as styled terminal output.
+// Takes a markdown content string and returns it as styled terminal output.
 // It uses the glamour library to apply styling and word wrapping.
-func RenderMD(content string) (string, error) {
+func ToMarkDown(content string) (string, error) {
 	// Create a terminal renderer with auto-detected style
 	renderer, err := glamour.NewTermRenderer(
 		// Automatically pick dark or light style based on terminal

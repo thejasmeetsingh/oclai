@@ -12,6 +12,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/thejasmeetsingh/oclai/app"
+	"github.com/thejasmeetsingh/oclai/ollama"
 )
 
 var fileContents []string
@@ -55,17 +56,17 @@ var Query = &cobra.Command{
 			query = fmt.Sprintf("```\n%s\n```\nUser Query: %s", strings.Join(fileContents, "\n"), query)
 		}
 
-		request := app.ModelRequest{
+		request := ollama.ModelRequest{
 			Model: app.OclaiConfig.DefaultModel,
 			Think: false,
-			Messages: &[]app.Message{{
-				Role:    app.UserRole,
+			Messages: &[]ollama.Message{{
+				Role:    ollama.UserRole,
 				Content: query,
 			}},
 		}
 
 		// Send a one-off chat request to Ollama API
-		content, err := app.Chat(request, true)
+		content, err := ollama.Chat(app.OclaiConfig.BaseURL, request, true)
 		if err != nil {
 			errMsg.Println(err)
 			os.Exit(1)

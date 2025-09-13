@@ -7,17 +7,17 @@ import (
 	"strings"
 
 	goMCP "github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/thejasmeetsingh/oclai/app"
+	"github.com/thejasmeetsingh/oclai/ollama"
 )
 
-func ListTools(ctx context.Context, cs *goMCP.ClientSession) ([]*app.Tool, error) {
+func ListTools(ctx context.Context, cs *goMCP.ClientSession) ([]*ollama.Tool, error) {
 	mcpTools, err := cs.ListTools(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var tools []*app.Tool
-	var params app.Parameter
+	var tools []*ollama.Tool
+	var params ollama.Parameter
 
 	for _, tool := range mcpTools.Tools {
 		inputSchema, err := tool.InputSchema.MarshalJSON()
@@ -30,9 +30,9 @@ func ListTools(ctx context.Context, cs *goMCP.ClientSession) ([]*app.Tool, error
 			return nil, err
 		}
 
-		tools = append(tools, &app.Tool{
+		tools = append(tools, &ollama.Tool{
 			ToolType: "function",
-			Function: app.Function{
+			Function: ollama.Function{
 				Name:        tool.Name,
 				Description: tool.Description,
 				Parameter:   params,
