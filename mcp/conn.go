@@ -7,10 +7,7 @@ import (
 	"os/exec"
 
 	goMCP "github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/thejasmeetsingh/oclai/app"
 )
-
-var client = app.McpClient
 
 type (
 	ConnParams struct {
@@ -71,7 +68,7 @@ func CreateSession(ctx context.Context, params ConnParams) (*goMCP.ClientSession
 		transport = &goMCP.CommandTransport{Command: exec.Command(params.Command, params.Args...)}
 	}
 
-	session, err := client.Connect(ctx, transport, nil)
+	session, err := Client.Connect(ctx, transport, nil)
 	if err != nil {
 		return nil, err
 	}
