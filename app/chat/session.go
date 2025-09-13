@@ -268,7 +268,16 @@ func (s *session) handleCommand(command string) (*session, tea.Cmd) {
 }
 
 func (s *session) sendChatRequest() {
-	response, err := ollama.Chat(app.OclaiConfig.BaseURL, s.modelRequest, false)
+	modelResponse, err := ollama.Chat(app.OclaiConfig.BaseURL, s.modelRequest)
+	if err != nil {
+		s.updateSessionMessages(sessionMessage{
+			_type:   errMsg,
+			content: err.Error(),
+		})
+		return
+	}
+
+	content, err := utils.ToMarkDown(modelResponse.Message.Content)
 	if err != nil {
 		s.updateSessionMessages(sessionMessage{
 			_type:   errMsg,
@@ -279,11 +288,11 @@ func (s *session) sendChatRequest() {
 
 	s.addModelMessage(ollama.Message{
 		Role:    ollama.AssistantRole,
-		Content: response,
+		Content: content,
 	})
 	s.updateSessionMessages(sessionMessage{
 		_type:   aiMsg,
-		content: response,
+		content: content,
 	})
 
 	s.waiting = false

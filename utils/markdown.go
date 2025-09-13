@@ -13,8 +13,8 @@ func ToMarkDown(content string) (string, error) {
 	renderer, err := glamour.NewTermRenderer(
 		// Automatically pick dark or light style based on terminal
 		glamour.WithStandardStyle("dark"),
-		// Set word wrap to 80 characters
-		glamour.WithWordWrap(80),
+		// Set word wrap to 100 characters
+		glamour.WithWordWrap(100),
 	)
 	if err != nil {
 		return "", err

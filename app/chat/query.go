@@ -8,11 +8,13 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/thejasmeetsingh/oclai/app"
 	"github.com/thejasmeetsingh/oclai/ollama"
+	"github.com/thejasmeetsingh/oclai/utils"
 )
 
 var fileContents []string
@@ -66,13 +68,29 @@ var Query = &cobra.Command{
 		}
 
 		// Send a one-off chat request to Ollama API
-		content, err := ollama.Chat(app.OclaiConfig.BaseURL, request, true)
+		modelResponse, err := ollama.Chat(app.OclaiConfig.BaseURL, request)
 		if err != nil {
 			errMsg.Println(err)
 			os.Exit(1)
 		}
 
-		fmt.Println(content)
+		content := modelResponse.Message.Content
+		result, err := utils.ToMarkDown(content)
+		if err != nil {
+			errMsg.Println(err)
+			os.Exit(1)
+		}
+
+		if modelResponse.TotalDuration > 0 {
+			duration := time.Duration(modelResponse.TotalDuration)
+			tokensPerSec := float64(modelResponse.EvalCount) / duration.Seconds()
+			stat := color.New(color.FgGreen).Sprintf("✓ Generated %d tokens in %v (%.1f tokens/sec)\n\n",
+				modelResponse.EvalCount, duration, tokensPerSec)
+
+			result = fmt.Sprintf("%s\n%s", result, stat)
+		}
+
+		fmt.Println(result)
 	},
 }
 

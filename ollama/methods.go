@@ -6,9 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
-	"github.com/fatih/color"
 	"github.com/thejasmeetsingh/oclai/utils"
 )
 
@@ -81,44 +79,28 @@ func ShowModels(url string, models *[]ModelInfo) (string, error) {
 }
 
 // Chat sends a chat request to the model API and processes the response
-func Chat(url string, request ModelRequest, showStats bool) (string, error) {
+func Chat(url string, request ModelRequest) (*ModelResponse, error) {
 	body := &bytes.Buffer{}
 	encoder := json.NewEncoder(body)
 	encoder.Encode(request)
 
 	response, err := http.Post(url+"/api/chat", "application/json", body)
 	if err != nil {
-		return "", nil
+		return nil, err
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("API request failed with status %d", response.StatusCode)
+		return nil, fmt.Errorf("API request failed with status %d", response.StatusCode)
 	}
 
 	var modelResponse ModelResponse
 	if err = json.NewDecoder(response.Body).Decode(&modelResponse); err != nil {
-		return "", fmt.Errorf("error while parsing the model response: %s", err.Error())
+		return nil, fmt.Errorf("error while parsing the model response: %s", err.Error())
 	}
 
 	if modelResponse.Done {
-		content := modelResponse.Message.Content
-		result, err := utils.ToMarkDown(content)
-		if err != nil {
-			return "", err
-		}
-
-		if showStats && modelResponse.TotalDuration > 0 {
-			duration := time.Duration(modelResponse.TotalDuration)
-			tokensPerSec := float64(modelResponse.EvalCount) / duration.Seconds()
-			stat := color.New(color.FgGreen).Sprintf("✓ Generated %d tokens in %v (%.1f tokens/sec)\n\n",
-				modelResponse.EvalCount, duration, tokensPerSec)
-
-			result = fmt.Sprintf("%s\n%s", result, stat)
-		}
-
-		return result, nil
+		return &modelResponse, nil
 	}
-
-	return "", nil
+	return nil, fmt.Errorf("no response is returned from ollama service")
 }
