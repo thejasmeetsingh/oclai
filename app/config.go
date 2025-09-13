@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 
 	"github.com/fatih/color"
-	goMCP "github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/spf13/viper"
+	"github.com/thejasmeetsingh/oclai/mcp"
 )
 
 const configFileName string = ".oclai-config"
@@ -29,63 +29,12 @@ type Config struct {
 	File string `json:"file"`
 }
 
-var (
-	// OclaiConfig is a global variable that holds the application's configuration.
-	OclaiConfig Config
-
-	McpClient = goMCP.NewClient(&goMCP.Implementation{Name: "oclai", Version: "v1.0.0"}, nil)
-
-	filePath = func(filename string) string {
-		return filepath.Join(os.Getenv("HOME"), filename)
-	}
-
-	defaultMCPServers = map[string]any{
-		"filesystem": map[string]any{
-			"command": "docker",
-			"args": []string{
-				"run",
-				"-i",
-				"--rm",
-				"-v",
-				".:/root",
-				"mcp/filesystem",
-				"/root",
-			},
-		},
-		"memory": map[string]any{
-			"command": "docker",
-			"args": []string{
-				"run",
-				"-i",
-				"--rm",
-				"-v",
-				fmt.Sprintf("%s:/app/dist", filePath("memory.json")),
-			},
-		},
-		"sequentialthinking": map[string]any{
-			"command": "docker",
-			"args": []string{
-				"run",
-				"--rm",
-				"-i",
-				"mcp/sequentialthinking",
-			},
-		},
-		"fetch": map[string]any{
-			"command": "docker",
-			"args": []string{
-				"run",
-				"-i",
-				"--rm",
-				"mcp/fetch",
-			},
-		},
-	}
-)
+// OclaiConfig is a global variable that holds the application's configuration.
+var OclaiConfig Config
 
 // setupConfig initializes the configuration by setting the default values and writing the configuration file.
 func setupConfig() error {
-	configFilePath := filePath(configFileName + ".json")
+	configFilePath := filepath.Join(os.Getenv("HOME"), configFileName+".json")
 
 	viper.SetConfigName(configFileName) // Name of the config file (without extension)
 	viper.SetConfigType("json")         // Config file type
@@ -94,7 +43,7 @@ func setupConfig() error {
 	viper.SetDefault("baseURL", "http://localhost:11434") // Set default base URL
 	viper.SetDefault("defaultModel", "")                  // Set default model to empty string
 	viper.SetDefault("file", configFilePath)              // Set default file path
-	viper.SetDefault("mcpServers", defaultMCPServers)
+	viper.SetDefault("mcpServers", mcp.DefaultServers)
 
 	viper.SafeWriteConfigAs(configFilePath) // Write the config file to the specified file path
 	return viper.ReadInConfig()             // Read the configuration file
