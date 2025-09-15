@@ -4,33 +4,37 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	goMCP "github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/thejasmeetsingh/oclai/ollama"
 )
 
-func ListTools(ctx context.Context, cs *goMCP.ClientSession) ([]*ollama.Tool, error) {
+func ListTools(ctx context.Context, cs *goMCP.ClientSession) ([]ollama.Tool, error) {
+	var (
+		tools  []ollama.Tool
+		params ollama.Parameter
+	)
+
 	mcpTools, err := cs.ListTools(ctx, nil)
 	if err != nil {
-		return nil, err
+		return tools, err
 	}
-
-	var tools []*ollama.Tool
-	var params ollama.Parameter
 
 	for _, tool := range mcpTools.Tools {
 		inputSchema, err := tool.InputSchema.MarshalJSON()
 		if err != nil {
-			return nil, err
+			return tools, err
 		}
 
 		err = json.Unmarshal(inputSchema, &params)
 		if err != nil {
-			return nil, err
+			return tools, err
 		}
 
-		tools = append(tools, &ollama.Tool{
+		tools = append(tools, ollama.Tool{
 			ToolType: "function",
 			Function: ollama.Function{
 				Name:        tool.Name,
@@ -60,4 +64,20 @@ func CallTool(ctx context.Context, cs *goMCP.ClientSession, params *goMCP.CallTo
 	}
 
 	return strings.Join(toolResults, "."), nil
+}
+
+func SaveTools(tools map[string][]ollama.Tool) error {
+	toolsFilePath := filepath.Join(os.Getenv("HOME"), ToolsFileName)
+
+	data, err := json.MarshalIndent(tools, "", "\t")
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(toolsFilePath, data, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

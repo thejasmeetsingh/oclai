@@ -27,6 +27,8 @@ type Config struct {
 
 	// File is the file path or identifier associated with the configuration.
 	File string `json:"file"`
+
+	McpServers map[string]map[string]any `json:"mcpServers"`
 }
 
 // OclaiConfig is a global variable that holds the application's configuration.

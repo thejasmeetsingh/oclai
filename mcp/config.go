@@ -8,11 +8,13 @@ import (
 	goMCP "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
+const ToolsFileName = ".oclai-tools.json"
+
 var (
 	Client = goMCP.NewClient(&goMCP.Implementation{Name: "oclai", Version: "v1.0.0"}, nil)
 
-	DefaultServers = map[string]any{
-		"filesystem": map[string]any{
+	DefaultServers = map[string]map[string]any{
+		"filesystem": {
 			"command": "docker",
 			"args": []string{
 				"run",
@@ -24,7 +26,7 @@ var (
 				"/root",
 			},
 		},
-		"memory": map[string]any{
+		"memory": {
 			"command": "docker",
 			"args": []string{
 				"run",
@@ -34,7 +36,7 @@ var (
 				fmt.Sprintf("%s:/app/dist", filepath.Join(os.Getenv("HOME"), "memory.json")),
 			},
 		},
-		"sequentialthinking": map[string]any{
+		"sequentialthinking": {
 			"command": "docker",
 			"args": []string{
 				"run",
@@ -43,7 +45,7 @@ var (
 				"mcp/sequentialthinking",
 			},
 		},
-		"fetch": map[string]any{
+		"fetch": {
 			"command": "docker",
 			"args": []string{
 				"run",
