@@ -32,7 +32,11 @@ var Query = &cobra.Command{
 		oclai q "Analyze this code" -f /path/main.py
 	`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return app.DefaultModelCheck()
+		if app.OclaiConfig.DefaultModel == "" {
+			msg := color.New(color.FgRed).Sprint("please select a default model 🤖")
+			return fmt.Errorf("%s", msg) // Return an error if the default model is not set
+		}
+		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		// Join the query arguments into a single string.
