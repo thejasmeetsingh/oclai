@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	goMCP "github.com/modelcontextprotocol/go-sdk/mcp"
@@ -64,20 +62,4 @@ func CallTool(ctx context.Context, cs *goMCP.ClientSession, params *goMCP.CallTo
 	}
 
 	return strings.Join(toolResults, "."), nil
-}
-
-func SaveTools(tools map[string][]ollama.Tool) error {
-	toolsFilePath := filepath.Join(os.Getenv("HOME"), ToolsFileName)
-
-	data, err := json.MarshalIndent(tools, "", "\t")
-	if err != nil {
-		return err
-	}
-
-	err = os.WriteFile(toolsFilePath, data, 0644)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

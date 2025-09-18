@@ -1,10 +1,7 @@
-// Defines the root command and initialization logic for the CLI application.
-// It sets up persistent flags for configuring the base URL and default model,
-// adds the query subcommand, and loads the configuration file during initialization.
-
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -14,10 +11,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/thejasmeetsingh/oclai/app"
 	"github.com/thejasmeetsingh/oclai/app/chat"
+	"github.com/thejasmeetsingh/oclai/mcp"
 	"github.com/thejasmeetsingh/oclai/ollama"
+	"github.com/thejasmeetsingh/oclai/utils"
 )
 
 var (
+	rootPath = ""
+
 	infoMsg    = color.New(color.FgBlue, color.Bold)
 	errMsg     = color.New(color.FgRed)
 	successMsg = color.New(color.FgGreen)
@@ -93,7 +94,7 @@ func setBaseURL(arg string) error {
 
 	// Update the configuration with the new base URL
 	app.OclaiConfig.BaseURL = baseURL.String()
-	return app.UpdateConfig()
+	return app.UpdateConfig(rootPath)
 }
 
 // setDefaultModel sets the default model to be used by the CLI.
@@ -105,13 +106,21 @@ func setDefaultModel(arg string) error {
 
 	// Update the configuration with the new default model
 	app.OclaiConfig.DefaultModel = strings.TrimSpace(arg)
-	return app.UpdateConfig()
+	return app.UpdateConfig(rootPath)
 }
 
 // init initializes the root command by:
 // - Adding persistent flags & subcommands.
 // - Loading the configuration file
 func init() {
+	_rootPath, err := utils.GetAppRootDir()
+	if err != nil {
+		errMsg.Println("Error caught while retreiving root path: ", err)
+		os.Exit(1)
+	}
+
+	rootPath = _rootPath
+
 	// Add persistent flags to the root command
 	rootCmd.PersistentFlags().Func("baseURL", "Set Ollama BaseURL", setBaseURL)
 	rootCmd.PersistentFlags().Func("model", "Set Default Model", setDefaultModel)
@@ -125,8 +134,19 @@ func init() {
 	)
 
 	// Load configuration file
-	if err := app.LoadConfig(); err != nil {
+	if err := app.LoadConfig(rootPath); err != nil {
 		errMsg.Println("Failed to load configuration: ", err)
+		os.Exit(1)
+	}
+
+	// Load and Initialize MCP servers
+	if err := mcp.LoadConfig(rootPath); err != nil {
+		errMsg.Println("Failed to load MCP servers: ", err)
+		os.Exit(1)
+	}
+
+	if err := mcp.InitializeServers(context.Background(), rootPath); err != nil {
+		errMsg.Println("Failed to initialize MCP servers: ", err)
 		os.Exit(1)
 	}
 }

@@ -8,24 +8,12 @@ import (
 	"os/exec"
 
 	goMCP "github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/thejasmeetsingh/oclai/ollama"
 )
 
-type (
-	ConnParams struct {
-		IsSSE    bool
-		Command  string
-		Args     []string
-		Endpoint string
-		Headers  map[string]string
-		envVars  map[string]string
-	}
-
-	customTransport struct {
-		headers             map[string]string
-		underlyingTransport http.RoundTripper
-	}
-)
+type customTransport struct {
+	headers             map[string]string
+	underlyingTransport http.RoundTripper
+}
 
 func (t *customTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if t.headers != nil {
@@ -48,9 +36,9 @@ func setEnvVars(vars map[string]string) error {
 	return nil
 }
 
-func CreateSession(ctx context.Context, params ConnParams) (*goMCP.ClientSession, error) {
-	if params.envVars != nil {
-		err := setEnvVars(params.envVars)
+func CreateSession(ctx context.Context, server McpServer) (*goMCP.ClientSession, error) {
+	if len(server.Env) != 0 {
+		err := setEnvVars(server.Env)
 		if err != nil {
 			return nil, err
 		}
@@ -58,16 +46,16 @@ func CreateSession(ctx context.Context, params ConnParams) (*goMCP.ClientSession
 
 	var transport goMCP.Transport
 
-	if params.IsSSE {
+	if server.IsSSE {
 		httpClient := http.Client{}
 		httpClient.Transport = &customTransport{
-			headers:             params.Headers,
+			headers:             server.Headers,
 			underlyingTransport: http.DefaultTransport,
 		}
 
-		transport = &goMCP.SSEClientTransport{Endpoint: params.Endpoint, HTTPClient: &httpClient}
+		transport = &goMCP.SSEClientTransport{Endpoint: server.Endpoint, HTTPClient: &httpClient}
 	} else {
-		transport = &goMCP.CommandTransport{Command: exec.Command(params.Command, params.Args...)}
+		transport = &goMCP.CommandTransport{Command: exec.Command(server.Command, server.Args...)}
 	}
 
 	session, err := Client.Connect(ctx, transport, nil)
@@ -78,46 +66,27 @@ func CreateSession(ctx context.Context, params ConnParams) (*goMCP.ClientSession
 	return session, nil
 }
 
-func InitializeServers(ctx context.Context, servers map[string]map[string]any) error {
-	var allTools map[string][]ollama.Tool
+func InitializeServers(ctx context.Context, rootPath string) error {
+	servers := McpServers["servers"]
 
-	for server, srvConfig := range servers {
-		command, isCommand := srvConfig["command"]
-		args, isArgs := srvConfig["args"]
-		endpoint, isEndpoint := srvConfig["endpoint"]
-		headers, isHeaders := srvConfig["headers"]
-		envVars, isEnvVars := srvConfig["env"]
-
-		if !isCommand && !isEndpoint {
-			return fmt.Errorf("no transport is provided for %s server", server)
+	for _, server := range servers {
+		if server.Command == "" && server.Endpoint == "" {
+			return fmt.Errorf("no transport is provided for %s server", server.Name)
 		}
 
-		if !isArgs {
-			args = make([]string, 0)
+		if len(server.Args) == 0 {
+			server.Args = make([]string, 0)
 		}
 
-		if !isHeaders {
-			headers = make(map[string]string)
+		if len(server.Headers) == 0 {
+			server.Headers = make(map[string]string)
 		}
 
-		if !isEnvVars {
-			envVars = make(map[string]string)
+		if len(server.Env) == 0 {
+			server.Env = make(map[string]string)
 		}
 
-		var connParams ConnParams
-
-		if isCommand {
-			connParams.IsSSE = false
-			connParams.Command = command.(string)
-			connParams.Args = args.([]string)
-			connParams.envVars = envVars.(map[string]string)
-		} else {
-			connParams.IsSSE = true
-			connParams.Endpoint = endpoint.(string)
-			connParams.Headers = headers.(map[string]string)
-		}
-
-		session, err := CreateSession(ctx, connParams)
+		session, err := CreateSession(ctx, *server)
 		if err != nil {
 			return err
 		}
@@ -128,11 +97,13 @@ func InitializeServers(ctx context.Context, servers map[string]map[string]any) e
 		}
 
 		if len(tools) != 0 {
-			allTools[server] = tools
+			server.Tools = tools
 		}
+
+		session.Close()
 	}
 
-	err := SaveTools(allTools)
+	err := UpdateConfig(rootPath)
 	if err != nil {
 		return err
 	}
