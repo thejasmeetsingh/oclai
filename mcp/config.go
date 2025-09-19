@@ -25,7 +25,7 @@ type McpServer struct {
 
 var (
 	Client     = goMCP.NewClient(&goMCP.Implementation{Name: "oclai", Version: "v1.0.0"}, nil)
-	McpServers = make(map[string][]*McpServer)
+	mcpServers = make(map[string][]*McpServer)
 )
 
 func LoadConfig(rootPath string) error {
@@ -49,13 +49,13 @@ func LoadConfig(rootPath string) error {
 		return err
 	}
 
-	return json.Unmarshal(data, &McpServers)
+	return json.Unmarshal(data, &mcpServers)
 }
 
 func UpdateConfig(rootPath string) error {
 	filePath := filepath.Join(rootPath, McpConfigFileName)
 
-	data, err := json.MarshalIndent(&McpServers, "", "  ")
+	data, err := json.MarshalIndent(&mcpServers, "", "  ")
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package mcp
 import (
 	"context"
 	"fmt"
+	"strings"
 )
 
 func getDefaultServers() []McpServer {
@@ -47,7 +48,7 @@ func getDefaultServers() []McpServer {
 }
 
 func InitializeServers(ctx context.Context, rootPath string) error {
-	servers := McpServers["servers"]
+	servers := mcpServers["servers"]
 
 	for _, server := range servers {
 		if server.Command == "" && server.Endpoint == "" {
@@ -89,4 +90,34 @@ func InitializeServers(ctx context.Context, rootPath string) error {
 	}
 
 	return nil
+}
+
+func isServerExists(newServerName string) int {
+	for idx, server := range mcpServers["servers"] {
+		if strings.EqualFold(server.Name, newServerName) {
+			return idx
+		}
+	}
+
+	return -1
+}
+
+func AddServer(rootPath string, mcpServer McpServer) error {
+	result := isServerExists(mcpServer.Name)
+	if result != -1 {
+		return fmt.Errorf("server with '%s' name already exists", mcpServer.Name)
+	}
+
+	mcpServers["servers"] = append(mcpServers["servers"], &mcpServer)
+	return InitializeServers(context.Background(), rootPath)
+}
+
+func RemoveServer(rootPath, serverName string) error {
+	idx := isServerExists(serverName)
+	if idx != -1 {
+		return fmt.Errorf("server with '%s' name does not exists", serverName)
+	}
+
+	mcpServers["servers"] = append(mcpServers["servers"][:idx], mcpServers["servers"][idx:]...)
+	return InitializeServers(context.Background(), rootPath)
 }
