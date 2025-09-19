@@ -28,47 +28,6 @@ var (
 	McpServers = make(map[string][]*McpServer)
 )
 
-func getDefaultServers() []McpServer {
-	return []McpServer{
-		{
-			IsSSE:   false,
-			Name:    "filesystem",
-			Command: "docker",
-			Args: []string{
-				"run",
-				"-i",
-				"--rm",
-				"-v",
-				".:/root",
-				"mcp/filesystem",
-				"/root",
-			},
-		},
-		{
-			IsSSE:   false,
-			Name:    "sequentialthinking",
-			Command: "docker",
-			Args: []string{
-				"run",
-				"--rm",
-				"-i",
-				"mcp/sequentialthinking",
-			},
-		},
-		{
-			IsSSE:   false,
-			Name:    "fetch",
-			Command: "docker",
-			Args: []string{
-				"run",
-				"-i",
-				"--rm",
-				"mcp/fetch",
-			},
-		},
-	}
-}
-
 func LoadConfig(rootPath string) error {
 	filePath := filepath.Join(rootPath, McpConfigFileName)
 	servers := getDefaultServers()
