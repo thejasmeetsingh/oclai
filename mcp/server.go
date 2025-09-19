@@ -114,11 +114,11 @@ func addServer(rootPath string, mcpServer McpServer) error {
 
 func removeServer(rootPath, serverName string) error {
 	idx := isServerExists(serverName)
-	if idx != -1 {
+	if idx == -1 {
 		return fmt.Errorf("server with '%s' name does not exists", serverName)
 	}
 
-	mcpServers["servers"] = append(mcpServers["servers"][:idx], mcpServers["servers"][idx:]...)
+	mcpServers["servers"] = append(mcpServers["servers"][:idx], mcpServers["servers"][idx+1:]...)
 	return InitializeServers(context.Background(), rootPath)
 }
 

@@ -76,7 +76,7 @@ var (
 				os.Exit(1)
 			}
 
-			successMsg.Printf("%s server removed successfully!", serverName)
+			successMsg.Printf("'%s' server removed successfully!\n", serverName)
 		},
 	}
 
@@ -85,16 +85,16 @@ var (
 		Short: "Add a MCP server",
 		Example: `
 			oclai mcp add --name everything --cmd npx --args '-y @modelcontextprotocol/server-everything'
-			oclai mcp add --name brave-search --cmd docker --args 'run -i --rm mcp/brave-search' --env BRAVE_API_KEY=$BRAVE_API_KEY
-			oclai mcp add --name github --endpoint https://api.githubcopilot.com/mcp/ --headers Authorization=Bearer $GH_TOKEN
+			oclai mcp add --name brave-search --cmd docker --args 'run -i --rm mcp/brave-search' --env=BRAVE_API_KEY:$BRAVE_API_KEY
+			oclai mcp add --name github --endpoint https://api.githubcopilot.com/mcp/ --headers=Authorization:Bearer $GH_TOKEN
 		`,
 		Run: func(cmd *cobra.Command, args []string) {
 			nameArg, _ := cmd.Flags().GetString("name")
 			cmdArg, _ := cmd.Flags().GetString("cmd")
 			endpointArg, _ := cmd.Flags().GetString("endpoint")
 			cmdArgs, _ := cmd.Flags().GetString("args")
-			headerArgs, _ := cmd.Flags().GetStringArray("headers")
-			envArgs, _ := cmd.Flags().GetStringArray("env")
+			headerArgs, _ := cmd.Flags().GetStringSlice("headers")
+			envArgs, _ := cmd.Flags().GetStringSlice("env")
 
 			var (
 				isSSE   bool
@@ -103,16 +103,16 @@ var (
 			)
 
 			if nameArg == "" {
-				errMsg.Println("--name is required")
+				errMsg.Println("'--name' is required")
 			}
 
-			if cmdArg == "" || endpointArg == "" {
-				errMsg.Println("--cmd or --endpoint is required")
+			if cmdArg == "" && endpointArg == "" {
+				errMsg.Println("'--cmd' or '--endpoint' is required")
 				os.Exit(1)
 			}
 
-			if cmdArg != "" || endpointArg != "" {
-				errMsg.Println("Cannot add --cmd and --endpoint together")
+			if cmdArg != "" && endpointArg != "" {
+				errMsg.Println("Cannot add '--cmd' and '--endpoint' together")
 				os.Exit(1)
 			}
 
@@ -152,7 +152,7 @@ func getArrayToMap(arr []string) map[string]string {
 	result := make(map[string]string)
 
 	for _, el := range arr {
-		keyVal := strings.Split(el, "=")
+		keyVal := strings.Split(el, ":")
 		key := strings.TrimSpace(keyVal[0])
 		val := strings.TrimSpace(keyVal[1])
 
@@ -179,6 +179,6 @@ func init() {
 	addServerCmd.Flags().String("cmd", "", "Command to start the server")
 	addServerCmd.Flags().String("endpoint", "", "HTTP/SSE endpoint of the server")
 	addServerCmd.Flags().String("args", "", "Arguments for the server command")
-	addServerCmd.Flags().StringSliceP("env", "e", []string{}, "Specify env varriables (comma seperated) to run the server command with")
-	addServerCmd.Flags().StringSliceP("headers", "h", []string{}, "Add addition headers varriables (comma seperated) which will be used while connecting to the server")
+	addServerCmd.Flags().StringSlice("env", []string{}, "Specify env varriables (comma seperated) to run the server command with")
+	addServerCmd.Flags().StringSlice("headers", []string{}, "Add addition headers varriables (comma seperated) which will be used while connecting to the server")
 }
