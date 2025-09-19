@@ -102,7 +102,7 @@ func isServerExists(newServerName string) int {
 	return -1
 }
 
-func AddServer(rootPath string, mcpServer McpServer) error {
+func addServer(rootPath string, mcpServer McpServer) error {
 	result := isServerExists(mcpServer.Name)
 	if result != -1 {
 		return fmt.Errorf("server with '%s' name already exists", mcpServer.Name)
@@ -112,7 +112,7 @@ func AddServer(rootPath string, mcpServer McpServer) error {
 	return InitializeServers(context.Background(), rootPath)
 }
 
-func RemoveServer(rootPath, serverName string) error {
+func removeServer(rootPath, serverName string) error {
 	idx := isServerExists(serverName)
 	if idx != -1 {
 		return fmt.Errorf("server with '%s' name does not exists", serverName)
@@ -120,4 +120,14 @@ func RemoveServer(rootPath, serverName string) error {
 
 	mcpServers["servers"] = append(mcpServers["servers"][:idx], mcpServers["servers"][idx:]...)
 	return InitializeServers(context.Background(), rootPath)
+}
+
+func getServerList() []string {
+	servers := make([]string, 0)
+
+	for _, server := range mcpServers["servers"] {
+		servers = append(servers, server.Name)
+	}
+
+	return servers
 }

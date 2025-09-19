@@ -131,6 +131,7 @@ func init() {
 		statusCmd,
 		chat.Query,
 		chat.Chat,
+		mcp.McpRootCmd,
 	)
 
 	// Load configuration file
