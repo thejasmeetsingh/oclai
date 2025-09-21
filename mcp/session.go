@@ -59,8 +59,7 @@ func CreateSession(ctx context.Context, server McpServer) (*goMCP.ClientSession,
 			headers:             server.Headers,
 			underlyingTransport: http.DefaultTransport,
 		}
-
-		transport = &goMCP.SSEClientTransport{Endpoint: server.Endpoint, HTTPClient: &httpClient}
+		transport = &goMCP.StreamableClientTransport{Endpoint: server.Endpoint, HTTPClient: &httpClient}
 	} else {
 		cmd := exec.Command(server.Command, server.Args...)
 
