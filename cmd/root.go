@@ -24,60 +24,62 @@ var (
 	successMsg = color.New(color.FgGreen)
 )
 
-// rootCmd is the main command for the CLI application.
-// It serves as the entry point for all CLI commands.
-var rootCmd = &cobra.Command{
-	Use:     "oclai",
-	Short:   "A completely offline agentic CLI",
-	Long:    infoMsg.Sprint("An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."),
-	Example: `oclai q "What's the latest news of today"`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 0 {
-			return
-		}
-
-		// Check if any global flags have been changed
-		globalCmds := []string{"baseURL", "model"}
-		for _, gloglobalCmd := range globalCmds {
-			if cmd.Flags().Lookup(gloglobalCmd).Changed {
+var (
+	// rootCmd is the main command for the CLI application.
+	// It serves as the entry point for all CLI commands.
+	rootCmd = &cobra.Command{
+		Use:     "oclai",
+		Short:   "A completely offline agentic CLI",
+		Long:    infoMsg.Sprint("An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."),
+		Example: `oclai q "What's the latest news of today"`,
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) != 0 {
 				return
 			}
-		}
 
-		// If no arguments were provided and no global flags were changed, show help
-		cmd.Help()
-	},
-}
+			// Check if any global flags have been changed
+			globalCmds := []string{"baseURL", "model"}
+			for _, gloglobalCmd := range globalCmds {
+				if cmd.Flags().Lookup(gloglobalCmd).Changed {
+					return
+				}
+			}
 
-// Command for viewing ollama models
-var modelsCmd = &cobra.Command{
-	Use:   "models",
-	Short: "List available models",
-	Long:  infoMsg.Sprint("Display all models currently available in your local Ollama installation."),
-	Run: func(cmd *cobra.Command, args []string) {
-		content, err := ollama.ShowModels(app.OclaiConfig.BaseURL, nil)
-		if err != nil {
-			errMsg.Println("Error listing models:", err)
-			os.Exit(1)
-		}
-		fmt.Println(content)
-	},
-}
+			// If no arguments were provided and no global flags were changed, show help
+			cmd.Help()
+		},
+	}
 
-// Command for checking ollama service status
-var statusCmd = &cobra.Command{
-	Use:   "status",
-	Short: "Check Ollama service status",
-	Long:  infoMsg.Sprint("Check if Ollama service is running and display connection information."),
-	Run: func(cmd *cobra.Command, args []string) {
-		if err := ollama.CheckOllamaConnection(app.OclaiConfig.BaseURL); err != nil {
-			errMsg.Println("Ollama Status:", err)
-			os.Exit(1)
-		}
+	// Command for viewing ollama models
+	modelsCmd = &cobra.Command{
+		Use:   "models",
+		Short: "List available models",
+		Long:  infoMsg.Sprint("Display all models currently available in your local Ollama installation."),
+		Run: func(cmd *cobra.Command, args []string) {
+			content, err := ollama.ShowModels(app.OclaiConfig.BaseURL, nil)
+			if err != nil {
+				errMsg.Println("Error listing models:", err)
+				os.Exit(1)
+			}
+			fmt.Println(content)
+		},
+	}
 
-		successMsg.Println("✅ Ollama is running at:", app.OclaiConfig.BaseURL)
-	},
-}
+	// Command for checking ollama service status
+	statusCmd = &cobra.Command{
+		Use:   "status",
+		Short: "Check Ollama service status",
+		Long:  infoMsg.Sprint("Check if Ollama service is running and display connection information."),
+		Run: func(cmd *cobra.Command, args []string) {
+			if err := ollama.CheckOllamaConnection(app.OclaiConfig.BaseURL); err != nil {
+				errMsg.Println("Ollama Status:", err)
+				os.Exit(1)
+			}
+
+			successMsg.Println("✅ Ollama is running at:", app.OclaiConfig.BaseURL)
+		},
+	}
+)
 
 // setBaseURL configures the base URL for the Ollama API.
 // It validates the input and updates the configuration if valid.
