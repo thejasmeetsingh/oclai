@@ -40,6 +40,7 @@ type (
 		spinner          spinner.Model
 		vp               viewport.Model
 		modelRequest     ollama.ModelRequest
+		spinnerMsg       string
 		messagesMarkdown string
 		models           []ollama.ModelInfo
 		waiting          bool
@@ -105,6 +106,7 @@ func initSession(modelRequest ollama.ModelRequest, models []ollama.ModelInfo) *s
 		models:           models,
 		modelRequest:     modelRequest,
 		messagesMarkdown: "",
+		spinnerMsg:       "",
 		waiting:          false,
 	}
 }
@@ -295,6 +297,7 @@ func (s *session) sendChatRequest() {
 	})
 
 	s.waiting = false
+	s.spinnerMsg = ""
 }
 
 func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -345,6 +348,8 @@ func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			})
 
 			s.waiting = true
+			s.spinnerMsg = "Thinking"
+
 			s.clearInput()
 			go s.sendChatRequest()
 
@@ -394,7 +399,7 @@ func (s *session) View() string {
 	}
 
 	if s.waiting {
-		bottom = lipgloss.NewStyle().Bold(true).Render(fmt.Sprintf("Thinking %s", s.spinner.View()))
+		bottom = lipgloss.NewStyle().Bold(true).Render(fmt.Sprintf("%s %s", s.spinnerMsg, s.spinner.View()))
 	} else {
 		bottom = s.textInput.View()
 	}
