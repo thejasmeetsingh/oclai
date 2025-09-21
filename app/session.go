@@ -1,4 +1,4 @@
-package chat
+package app
 
 import (
 	"fmt"
@@ -12,7 +12,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/fatih/color"
-	"github.com/thejasmeetsingh/oclai/app"
 	"github.com/thejasmeetsingh/oclai/ollama"
 	"github.com/thejasmeetsingh/oclai/utils"
 )
@@ -176,7 +175,7 @@ func handleClearHistory(s *session) (*session, tea.Cmd) {
 }
 
 func handleModelListing(s *session) (*session, tea.Cmd) {
-	modelsContent, err := ollama.ShowModels(app.OclaiConfig.BaseURL, &s.models)
+	modelsContent, err := ollama.ShowModels(OclaiConfig.BaseURL, &s.models)
 	if err != nil {
 		s.updateSessionMessages(sessionMessage{
 			_type:   errMsg,
@@ -268,7 +267,7 @@ func (s *session) handleCommand(command string) (*session, tea.Cmd) {
 }
 
 func (s *session) sendChatRequest() {
-	modelResponse, err := ollama.Chat(app.OclaiConfig.BaseURL, s.modelRequest)
+	modelResponse, err := ollama.Chat(OclaiConfig.BaseURL, s.modelRequest)
 	if err != nil {
 		s.updateSessionMessages(sessionMessage{
 			_type:   errMsg,

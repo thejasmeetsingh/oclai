@@ -1,4 +1,4 @@
-package chat
+package app
 
 import (
 	"bufio"
@@ -10,7 +10,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/thejasmeetsingh/oclai/app"
 	"github.com/thejasmeetsingh/oclai/ollama"
 )
 
@@ -25,17 +24,17 @@ var Chat = &cobra.Command{
 		oclai chat --model gemma3:latest
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		model := app.OclaiConfig.DefaultModel
+		model := OclaiConfig.DefaultModel
 		errMsg := color.New(color.FgRed)
 
-		models, err := ollama.ListModels(app.OclaiConfig.BaseURL)
+		models, err := ollama.ListModels(OclaiConfig.BaseURL)
 		if err != nil {
 			errMsg.Println("Error listing models:", err)
 			os.Exit(1)
 		}
 
 		if model == "" {
-			modelsContent, err := ollama.ShowModels(app.OclaiConfig.BaseURL, &models)
+			modelsContent, err := ollama.ShowModels(OclaiConfig.BaseURL, &models)
 			if err != nil {
 				errMsg.Println(err)
 				os.Exit(1)

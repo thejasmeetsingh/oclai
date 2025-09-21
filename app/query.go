@@ -1,7 +1,7 @@
 // Implements the 'q' command for asking queries to the selected model.
 // It handles query formatting, file input, piped input, and sends requests to the Ollama API.
 
-package chat
+package app
 
 import (
 	"bufio"
@@ -12,7 +12,6 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/thejasmeetsingh/oclai/app"
 	"github.com/thejasmeetsingh/oclai/ollama"
 	"github.com/thejasmeetsingh/oclai/utils"
 )
@@ -32,7 +31,7 @@ var Query = &cobra.Command{
 		oclai q "Analyze this code" -f /path/main.py
 	`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if app.OclaiConfig.DefaultModel == "" {
+		if OclaiConfig.DefaultModel == "" {
 			msg := color.New(color.FgRed).Sprint("please select a default model 🤖")
 			return fmt.Errorf("%s", msg) // Return an error if the default model is not set
 		}
@@ -63,7 +62,7 @@ var Query = &cobra.Command{
 		}
 
 		request := ollama.ModelRequest{
-			Model: app.OclaiConfig.DefaultModel,
+			Model: OclaiConfig.DefaultModel,
 			Think: false,
 			Messages: &[]ollama.Message{{
 				Role:    ollama.UserRole,
@@ -72,7 +71,7 @@ var Query = &cobra.Command{
 		}
 
 		// Send a one-off chat request to Ollama API
-		modelResponse, err := ollama.Chat(app.OclaiConfig.BaseURL, request)
+		modelResponse, err := ollama.Chat(OclaiConfig.BaseURL, request)
 		if err != nil {
 			errMsg.Println(err)
 			os.Exit(1)

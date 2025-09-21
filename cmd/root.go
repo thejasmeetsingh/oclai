@@ -10,7 +10,6 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/thejasmeetsingh/oclai/app"
-	"github.com/thejasmeetsingh/oclai/app/chat"
 	"github.com/thejasmeetsingh/oclai/mcp"
 	"github.com/thejasmeetsingh/oclai/ollama"
 	"github.com/thejasmeetsingh/oclai/utils"
@@ -131,8 +130,8 @@ func init() {
 	rootCmd.AddCommand(
 		modelsCmd,
 		statusCmd,
-		chat.Query,
-		chat.Chat,
+		app.Query,
+		app.Chat,
 		mcp.McpRootCmd,
 	)
 
