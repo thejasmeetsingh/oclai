@@ -44,7 +44,7 @@ func LoadConfig(rootPath string) error {
 		return err
 	}
 
-	data, err := utils.ReadFileContents(filePath)
+	data, err := utils.ReadMcpConfig(filePath)
 	if err != nil {
 		return err
 	}

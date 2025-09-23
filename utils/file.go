@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"bufio"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -32,7 +34,7 @@ func GetAppRootDir() (string, error) {
 	return appRootPath, nil
 }
 
-func ReadFileContents(filePath string) ([]byte, error) {
+func ReadMcpConfig(filePath string) ([]byte, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
@@ -43,4 +45,55 @@ func ReadFileContents(filePath string) ([]byte, error) {
 
 func WriteFileContents(filePath string, data []byte) error {
 	return os.WriteFile(filePath, data, os.FileMode(fileWritePerm))
+}
+
+func isValidFilePath(filePath string) bool {
+	_, err := os.Stat(filePath)
+	return err == nil
+}
+
+func readFromReader(reader *os.File) ([]string, error) {
+	fileContents := make([]string, 0)
+
+	scanner := bufio.NewScanner(reader)
+	for scanner.Scan() {
+		fileContents = append(fileContents, scanner.Text())
+	}
+
+	if err := scanner.Err(); err != nil {
+		return fileContents, err
+	}
+
+	return fileContents, nil
+}
+
+func ReadFileContent(filePath string) ([]string, error) {
+	var result []string
+
+	if !isValidFilePath(filePath) {
+		return result, fmt.Errorf("'%s' is not a valid file path", filePath)
+	}
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		return result, fmt.Errorf("failed to open file: %w", err)
+	}
+	defer file.Close()
+
+	return readFromReader(file)
+}
+
+func ReadPipedInput() ([]string, error) {
+	var result []string
+
+	stat, err := os.Stdin.Stat()
+	if err != nil {
+		return result, fmt.Errorf("failed to check stdin status: %w", err)
+	}
+
+	if (stat.Mode() & os.ModeCharDevice) == 0 {
+		return readFromReader(os.Stdin)
+	}
+
+	return result, nil
 }
