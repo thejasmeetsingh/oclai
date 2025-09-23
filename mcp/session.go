@@ -50,7 +50,7 @@ func getEnv(env map[string]string, isDockerCmd bool) []string {
 	return result
 }
 
-func CreateSession(ctx context.Context, server McpServer) (*goMCP.ClientSession, error) {
+func createSession(ctx context.Context, server McpServer) (*goMCP.ClientSession, error) {
 	var transport goMCP.Transport
 
 	if server.IsSSE {

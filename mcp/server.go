@@ -67,12 +67,12 @@ func InitializeServers(ctx context.Context, rootPath string) error {
 			server.Env = make(map[string]string)
 		}
 
-		session, err := CreateSession(ctx, *server)
+		session, err := createSession(ctx, *server)
 		if err != nil {
 			return err
 		}
 
-		tools, err := ListTools(ctx, session)
+		tools, err := listTools(ctx, session)
 		if err != nil {
 			return err
 		}

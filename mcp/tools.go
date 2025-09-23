@@ -10,7 +10,7 @@ import (
 	"github.com/thejasmeetsingh/oclai/ollama"
 )
 
-func ListTools(ctx context.Context, cs *goMCP.ClientSession) ([]ollama.Tool, error) {
+func listTools(ctx context.Context, cs *goMCP.ClientSession) ([]ollama.Tool, error) {
 	var (
 		tools  []ollama.Tool
 		params ollama.Parameter
@@ -62,4 +62,33 @@ func CallTool(ctx context.Context, cs *goMCP.ClientSession, params *goMCP.CallTo
 	}
 
 	return strings.Join(toolResults, "."), nil
+}
+
+func GetAllTools() []ollama.Tool {
+	tools := make([]ollama.Tool, 0)
+	servers := mcpServers["servers"]
+
+	for _, server := range servers {
+		tools = append(tools, server.Tools...)
+	}
+
+	return tools
+}
+
+func GetSessionFromToolName(ctx context.Context, toolName string) (*goMCP.ClientSession, error) {
+	servers := mcpServers["servers"]
+
+	for _, server := range servers {
+		for _, tool := range server.Tools {
+			if strings.EqualFold(tool.Function.Name, toolName) {
+				session, err := createSession(ctx, *server)
+				if err != nil {
+					return nil, err
+				}
+				return session, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("'%s' tool does not exists", toolName)
 }
