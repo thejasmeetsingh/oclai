@@ -1,0 +1,60 @@
+package app
+
+import (
+	"context"
+	"fmt"
+
+	goMCP "github.com/modelcontextprotocol/go-sdk/mcp"
+	"github.com/thejasmeetsingh/oclai/mcp"
+	"github.com/thejasmeetsingh/oclai/ollama"
+)
+
+func getToolResp(ctx context.Context, tool ollama.ToolCall) (string, error) {
+	mcpSession, err := mcp.GetSessionFromToolName(ctx, tool.Function.Name)
+	if err != nil {
+		return "", err
+	}
+
+	toolParams := &goMCP.CallToolParams{
+		Name:      tool.Function.Name,
+		Arguments: tool.Function.Args,
+	}
+
+	return mcp.CallTool(ctx, mcpSession, toolParams)
+}
+
+func chatWithTools(ctx context.Context, request ollama.ModelRequest, notify *string) (*ollama.ModelResponse, error) {
+	response, err := ollama.Chat(OclaiConfig.BaseURL, request)
+	if err != nil {
+		return nil, err
+	}
+
+	toolCalls := response.Message.ToolCalls
+
+	if len(toolCalls) != 0 {
+		for _, tool := range toolCalls {
+			if notify != nil {
+				msg := fmt.Sprintf("Calling '%s' Tool", tool.Function.Name)
+				notify = &msg
+			}
+
+			toolResp, err := getToolResp(ctx, tool)
+			if err != nil {
+				return nil, err
+			}
+
+			*request.Messages = append(*request.Messages, ollama.Message{
+				Role:    ollama.ToolRole,
+				Content: toolResp,
+			})
+		}
+
+		if notify != nil {
+			msg := "Processing Tool Response"
+			notify = &msg
+		}
+		return chatWithTools(ctx, request, notify)
+	}
+
+	return response, nil
+}

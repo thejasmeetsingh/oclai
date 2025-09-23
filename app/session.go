@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -269,7 +270,7 @@ func (s *session) handleCommand(command string) (*session, tea.Cmd) {
 }
 
 func (s *session) sendChatRequest() {
-	modelResponse, err := ollama.Chat(OclaiConfig.BaseURL, s.modelRequest)
+	modelResponse, err := chatWithTools(context.Background(), s.modelRequest, &s.spinnerMsg)
 	if err != nil {
 		s.updateSessionMessages(sessionMessage{
 			_type:   errMsg,

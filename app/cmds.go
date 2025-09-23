@@ -2,6 +2,7 @@ package app
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -11,11 +12,15 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"github.com/thejasmeetsingh/oclai/mcp"
 	"github.com/thejasmeetsingh/oclai/ollama"
 	"github.com/thejasmeetsingh/oclai/utils"
 )
 
-var fileContents []string
+var (
+	fileContents []string
+	mcpTools     []ollama.Tool
+)
 
 var (
 	Chat = &cobra.Command{
@@ -77,6 +82,7 @@ var (
 				Model:    model,
 				Think:    false,
 				Messages: &[]ollama.Message{ollama.SystemPromptMessage()},
+				Tools:    mcpTools,
 			}
 
 			program := tea.NewProgram(
@@ -142,16 +148,16 @@ var (
 					Role:    ollama.UserRole,
 					Content: query,
 				}},
+				Tools: mcpTools,
 			}
 
-			modelResponse, err := ollama.Chat(OclaiConfig.BaseURL, request)
+			modelResponse, err := chatWithTools(context.Background(), request, nil)
 			if err != nil {
 				errMsg.Println(err)
 				os.Exit(1)
 			}
 
-			content := modelResponse.Message.Content
-			result, err := utils.ToMarkDown(content)
+			result, err := utils.ToMarkDown(modelResponse.Message.Content)
 			if err != nil {
 				errMsg.Println(err)
 				os.Exit(1)
@@ -172,6 +178,8 @@ var (
 )
 
 func init() {
+	mcpTools = mcp.GetAllTools()
+
 	Query.PersistentFlags().FuncP("file", "f", "Read from file and ask query about the content", func(s string) error {
 		contents, err := utils.ReadFileContent(s)
 		if err != nil {
