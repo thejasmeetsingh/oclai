@@ -11,26 +11,20 @@ func getDefaultServers() []McpServer {
 		{
 			IsSSE:   false,
 			Name:    "filesystem",
-			Command: "docker",
+			Command: "npx",
 			Args: []string{
-				"run",
-				"-i",
-				"--rm",
-				"-v",
-				".:/root",
-				"mcp/filesystem",
-				"/root",
+				"-y",
+				"@modelcontextprotocol/server-filesystem",
+				".",
 			},
 		},
 		{
 			IsSSE:   false,
 			Name:    "sequentialthinking",
-			Command: "docker",
+			Command: "npx",
 			Args: []string{
-				"run",
-				"--rm",
-				"-i",
-				"mcp/sequentialthinking",
+				"-y",
+				"@modelcontextprotocol/server-sequential-thinking",
 			},
 		},
 		{
