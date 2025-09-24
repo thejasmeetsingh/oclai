@@ -52,7 +52,7 @@ func InitializeServers(ctx context.Context, rootPath string) error {
 
 	for _, server := range servers {
 		if server.Command == "" && server.Endpoint == "" {
-			return fmt.Errorf("no transport is provided for %s server", server.Name)
+			return fmt.Errorf("no transport is provided for '%s' server", server.Name)
 		}
 
 		if len(server.Args) == 0 {

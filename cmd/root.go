@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -110,9 +109,6 @@ func setDefaultModel(arg string) error {
 	return app.UpdateConfig(rootPath)
 }
 
-// init initializes the root command by:
-// - Adding persistent flags & subcommands.
-// - Loading the configuration file
 func init() {
 	_rootPath, err := utils.GetAppRootDir()
 	if err != nil {
@@ -134,23 +130,6 @@ func init() {
 		app.Chat,
 		mcp.McpRootCmd,
 	)
-
-	// Load configuration file
-	if err := app.LoadConfig(rootPath); err != nil {
-		errMsg.Println("Failed to load configuration: ", err)
-		os.Exit(1)
-	}
-
-	// Load and Initialize MCP servers
-	if err := mcp.LoadConfig(rootPath); err != nil {
-		errMsg.Println("Failed to load MCP servers: ", err)
-		os.Exit(1)
-	}
-
-	if err := mcp.InitializeServers(context.Background(), rootPath); err != nil {
-		errMsg.Println("Failed to initialize MCP servers: ", err)
-		os.Exit(1)
-	}
 }
 
 // Execute runs the root command.

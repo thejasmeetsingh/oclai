@@ -17,10 +17,7 @@ import (
 	"github.com/thejasmeetsingh/oclai/utils"
 )
 
-var (
-	fileContents []string
-	mcpTools     []ollama.Tool
-)
+var fileContents []string
 
 var (
 	Chat = &cobra.Command{
@@ -82,7 +79,7 @@ var (
 				Model:    model,
 				Think:    false,
 				Messages: &[]ollama.Message{ollama.SystemPromptMessage()},
-				Tools:    mcpTools,
+				Tools:    mcp.GetAllTools(),
 			}
 
 			program := tea.NewProgram(
@@ -148,7 +145,7 @@ var (
 					Role:    ollama.UserRole,
 					Content: query,
 				}},
-				Tools: mcpTools,
+				Tools: mcp.GetAllTools(),
 			}
 
 			modelResponse, err := chatWithTools(context.Background(), request, nil)
@@ -178,8 +175,6 @@ var (
 )
 
 func init() {
-	mcpTools = mcp.GetAllTools()
-
 	Query.PersistentFlags().FuncP("file", "f", "Read from file and ask query about the content", func(s string) error {
 		contents, err := utils.ReadFileContent(s)
 		if err != nil {
