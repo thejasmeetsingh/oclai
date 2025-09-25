@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/fatih/color"
@@ -36,7 +37,7 @@ var (
 			}
 
 			// Check if any global flags have been changed
-			globalCmds := []string{"baseURL", "model"}
+			globalCmds := []string{"baseURL", "model", "ctx"}
 			for _, gloglobalCmd := range globalCmds {
 				if cmd.Flags().Lookup(gloglobalCmd).Changed {
 					return
@@ -82,6 +83,8 @@ var (
 // setBaseURL configures the base URL for the Ollama API.
 // It validates the input and updates the configuration if valid.
 func setBaseURL(arg string) error {
+	arg = strings.TrimSpace(arg)
+
 	if arg == "" {
 		return fmt.Errorf("baseURL cannot be empty. Please provide a valid URL")
 	}
@@ -100,12 +103,30 @@ func setBaseURL(arg string) error {
 // setDefaultModel sets the default model to be used by the CLI.
 // It validates the input and updates the configuration if valid.
 func setDefaultModel(arg string) error {
+	arg = strings.TrimSpace(arg)
+
 	if arg == "" {
 		return fmt.Errorf("model value cannot be empty. Please provide a valid model name")
 	}
 
 	// Update the configuration with the new default model
 	app.OclaiConfig.DefaultModel = strings.TrimSpace(arg)
+	return app.UpdateConfig(rootPath)
+}
+
+func setNumCtx(arg string) error {
+	arg = strings.TrimSpace(arg)
+
+	if arg == "" {
+		return fmt.Errorf("'num_ctx' value should not be empty")
+	}
+
+	numCtx, err := strconv.Atoi(arg)
+	if err != nil {
+		return fmt.Errorf("invalid value")
+	}
+
+	app.OclaiConfig.NumCtx = numCtx
 	return app.UpdateConfig(rootPath)
 }
 
@@ -121,6 +142,7 @@ func init() {
 	// Add persistent flags to the root command
 	rootCmd.PersistentFlags().Func("baseURL", "Set Ollama BaseURL", setBaseURL)
 	rootCmd.PersistentFlags().Func("model", "Set Default Model", setDefaultModel)
+	rootCmd.PersistentFlags().Func("ctx", "Set Context Limit", setNumCtx)
 
 	// Add the query subcommand
 	rootCmd.AddCommand(

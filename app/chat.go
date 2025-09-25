@@ -24,6 +24,8 @@ func getToolResp(ctx context.Context, tool ollama.ToolCall) (string, error) {
 }
 
 func chatWithTools(ctx context.Context, request ollama.ModelRequest, notify *string) (*ollama.ModelResponse, error) {
+	request.Options = map[string]any{"num_ctx": OclaiConfig.NumCtx}
+
 	response, err := ollama.Chat(OclaiConfig.BaseURL, request)
 	if err != nil {
 		return nil, err

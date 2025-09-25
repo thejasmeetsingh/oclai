@@ -46,11 +46,12 @@ type (
 
 	// ModelRequest represents a request to the model API
 	ModelRequest struct {
-		Model    string     `json:"model"`
-		Think    bool       `json:"think"`
-		Format   string     `json:"format,omitempty"`
-		Messages *[]Message `json:"messages"`
-		Tools    []Tool     `json:"tools,omitempty"`
+		Model    string         `json:"model"`
+		Think    bool           `json:"think"`
+		Format   string         `json:"format,omitempty"`
+		Messages *[]Message     `json:"messages"`
+		Tools    []Tool         `json:"tools,omitempty"`
+		Options  map[string]any `json:"options,omitempty"`
 	}
 
 	// ModelResponse represents the response from the model API

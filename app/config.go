@@ -13,6 +13,7 @@ const AppConfigFileName = "config"
 type Config struct {
 	BaseURL      string `json:"baseURL"`
 	DefaultModel string `json:"defaultModel"`
+	NumCtx       int    `json:"numCtx"`
 }
 
 var OclaiConfig Config
@@ -26,8 +27,9 @@ func LoadConfig(rootPath string) error {
 
 	v.AddConfigPath(rootPath)
 	v.SetDefault("baseURL", "http://localhost:11434")
-
 	v.SetDefault("defaultModel", "")
+	v.SetDefault("numCtx", 8000)
+
 	v.SafeWriteConfigAs(filePath)
 	if err := v.ReadInConfig(); err != nil {
 		return err
