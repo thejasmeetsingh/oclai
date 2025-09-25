@@ -1,6 +1,7 @@
-package chat
+package app
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -12,7 +13,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/fatih/color"
-	"github.com/thejasmeetsingh/oclai/app"
+	"github.com/thejasmeetsingh/oclai/ollama"
+	"github.com/thejasmeetsingh/oclai/utils"
 )
 
 const (
@@ -38,9 +40,10 @@ type (
 		textInput        textinput.Model
 		spinner          spinner.Model
 		vp               viewport.Model
-		modelRequest     app.ModelRequest
+		modelRequest     ollama.ModelRequest
+		spinnerMsg       string
 		messagesMarkdown string
-		models           []app.ModelInfo
+		models           []ollama.ModelInfo
 		waiting          bool
 	}
 
@@ -74,7 +77,7 @@ func userPromptText() string {
 }
 
 func getMarkdownString(content string) string {
-	contentMD, err := app.RenderMD(content)
+	contentMD, err := utils.ToMarkDown(content)
 	if err != nil {
 		color.New(color.FgRed).Print(err.Error())
 		os.Exit(1)
@@ -83,7 +86,7 @@ func getMarkdownString(content string) string {
 	return contentMD
 }
 
-func initSession(modelRequest app.ModelRequest, models []app.ModelInfo) *session {
+func initSession(modelRequest ollama.ModelRequest, models []ollama.ModelInfo) *session {
 	ti := textinput.New()
 	ti.Placeholder = "Type your message here... (try typing '/' for commands)"
 	ti.Prompt = userPromptText()
@@ -104,6 +107,7 @@ func initSession(modelRequest app.ModelRequest, models []app.ModelInfo) *session
 		models:           models,
 		modelRequest:     modelRequest,
 		messagesMarkdown: "",
+		spinnerMsg:       "",
 		waiting:          false,
 	}
 }
@@ -117,7 +121,7 @@ func (s *session) clearInput() {
 	s.textInput.SetSuggestions([]string{})
 }
 
-func (s *session) addModelMessage(message app.Message) {
+func (s *session) addModelMessage(message ollama.Message) {
 	*s.modelRequest.Messages = append(*s.modelRequest.Messages, message)
 }
 
@@ -161,7 +165,7 @@ func handleHelp(s *session) (*session, tea.Cmd) {
 }
 
 func handleClearHistory(s *session) (*session, tea.Cmd) {
-	s.modelRequest.Messages = &[]app.Message{app.SystemPromptMessage()}
+	s.modelRequest.Messages = &[]ollama.Message{ollama.SystemPromptMessage()}
 	s.messagesMarkdown = ""
 
 	s.updateSessionMessages(sessionMessage{
@@ -174,7 +178,7 @@ func handleClearHistory(s *session) (*session, tea.Cmd) {
 }
 
 func handleModelListing(s *session) (*session, tea.Cmd) {
-	modelsContent, err := app.ShowModels(&s.models)
+	modelsContent, err := ollama.ShowModels(OclaiConfig.BaseURL, &s.models)
 	if err != nil {
 		s.updateSessionMessages(sessionMessage{
 			_type:   errMsg,
@@ -266,7 +270,7 @@ func (s *session) handleCommand(command string) (*session, tea.Cmd) {
 }
 
 func (s *session) sendChatRequest() {
-	response, err := app.Chat(s.modelRequest, false)
+	modelResponse, err := chatWithTools(context.Background(), s.modelRequest, &s.spinnerMsg)
 	if err != nil {
 		s.updateSessionMessages(sessionMessage{
 			_type:   errMsg,
@@ -275,16 +279,26 @@ func (s *session) sendChatRequest() {
 		return
 	}
 
-	s.addModelMessage(app.Message{
-		Role:    app.Assistant,
-		Content: response,
+	content, err := utils.ToMarkDown(modelResponse.Message.Content)
+	if err != nil {
+		s.updateSessionMessages(sessionMessage{
+			_type:   errMsg,
+			content: err.Error(),
+		})
+		return
+	}
+
+	s.addModelMessage(ollama.Message{
+		Role:    ollama.AssistantRole,
+		Content: content,
 	})
 	s.updateSessionMessages(sessionMessage{
 		_type:   aiMsg,
-		content: response,
+		content: content,
 	})
 
 	s.waiting = false
+	s.spinnerMsg = ""
 }
 
 func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -325,8 +339,8 @@ func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return s.handleCommand(input)
 			}
 
-			s.addModelMessage(app.Message{
-				Role:    app.User,
+			s.addModelMessage(ollama.Message{
+				Role:    ollama.UserRole,
 				Content: input,
 			})
 			s.updateSessionMessages(sessionMessage{
@@ -335,6 +349,8 @@ func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			})
 
 			s.waiting = true
+			s.spinnerMsg = "Thinking"
+
 			s.clearInput()
 			go s.sendChatRequest()
 
@@ -384,7 +400,7 @@ func (s *session) View() string {
 	}
 
 	if s.waiting {
-		bottom = lipgloss.NewStyle().Bold(true).Render(fmt.Sprintf("Thinking %s", s.spinner.View()))
+		bottom = lipgloss.NewStyle().Bold(true).Render(fmt.Sprintf("%s %s", s.spinnerMsg, s.spinner.View()))
 	} else {
 		bottom = s.textInput.View()
 	}
