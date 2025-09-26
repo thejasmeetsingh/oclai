@@ -24,8 +24,6 @@ var (
 )
 
 var (
-	// rootCmd is the main command for the CLI application.
-	// It serves as the entry point for all CLI commands.
 	rootCmd = &cobra.Command{
 		Use:     "oclai",
 		Short:   "A completely offline agentic CLI",
@@ -36,7 +34,6 @@ var (
 				return
 			}
 
-			// Check if any global flags have been changed
 			globalCmds := []string{"baseURL", "model", "ctx"}
 			for _, gloglobalCmd := range globalCmds {
 				if cmd.Flags().Lookup(gloglobalCmd).Changed {
@@ -44,12 +41,10 @@ var (
 				}
 			}
 
-			// If no arguments were provided and no global flags were changed, show help
 			cmd.Help()
 		},
 	}
 
-	// Command for viewing ollama models
 	modelsCmd = &cobra.Command{
 		Use:   "models",
 		Short: "List available models",
@@ -64,7 +59,6 @@ var (
 		},
 	}
 
-	// Command for checking ollama service status
 	statusCmd = &cobra.Command{
 		Use:   "status",
 		Short: "Check Ollama service status",
@@ -80,8 +74,6 @@ var (
 	}
 )
 
-// setBaseURL configures the base URL for the Ollama API.
-// It validates the input and updates the configuration if valid.
 func setBaseURL(arg string) error {
 	arg = strings.TrimSpace(arg)
 
@@ -89,19 +81,15 @@ func setBaseURL(arg string) error {
 		return fmt.Errorf("baseURL cannot be empty. Please provide a valid URL")
 	}
 
-	// Parse the URL and validate it
 	baseURL, err := url.Parse(strings.TrimSpace(arg))
 	if err != nil {
 		return fmt.Errorf("invalid URL format: %w. Please enter a valid URL", err)
 	}
 
-	// Update the configuration with the new base URL
 	app.OclaiConfig.BaseURL = baseURL.String()
 	return app.UpdateConfig(rootPath)
 }
 
-// setDefaultModel sets the default model to be used by the CLI.
-// It validates the input and updates the configuration if valid.
 func setDefaultModel(arg string) error {
 	arg = strings.TrimSpace(arg)
 
@@ -109,7 +97,6 @@ func setDefaultModel(arg string) error {
 		return fmt.Errorf("model value cannot be empty. Please provide a valid model name")
 	}
 
-	// Update the configuration with the new default model
 	app.OclaiConfig.DefaultModel = strings.TrimSpace(arg)
 	return app.UpdateConfig(rootPath)
 }
@@ -139,12 +126,10 @@ func init() {
 
 	rootPath = _rootPath
 
-	// Add persistent flags to the root command
 	rootCmd.PersistentFlags().Func("baseURL", "Set Ollama BaseURL", setBaseURL)
 	rootCmd.PersistentFlags().Func("model", "Set Default Model", setDefaultModel)
 	rootCmd.PersistentFlags().Func("ctx", "Set Context Limit", setNumCtx)
 
-	// Add the query subcommand
 	rootCmd.AddCommand(
 		modelsCmd,
 		statusCmd,
@@ -154,8 +139,6 @@ func init() {
 	)
 }
 
-// Execute runs the root command.
-// It handles any errors that occur during command execution.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
