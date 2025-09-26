@@ -84,9 +84,9 @@ var (
 		Use:   "add",
 		Short: "Add a MCP server",
 		Example: `
-			oclai mcp add --name everything --cmd npx --args '-y @modelcontextprotocol/server-everything'
-			oclai mcp add --name brave-search --cmd docker --args 'run -i --rm mcp/brave-search' --env=BRAVE_API_KEY:$BRAVE_API_KEY
-			oclai mcp add --name github --endpoint https://api.githubcopilot.com/mcp/ --headers=Authorization:Bearer $GH_TOKEN
+		oclai mcp add --name everything --cmd npx --args '-y @modelcontextprotocol/server-everything'
+		oclai mcp add --name brave-search --cmd docker --args 'run -i --rm mcp/brave-search' --env=BRAVE_API_KEY:$BRAVE_API_KEY
+		oclai mcp add --name github --endpoint https://api.githubcopilot.com/mcp/ --headers=Authorization:Bearer $GH_TOKEN
 		`,
 		Run: func(cmd *cobra.Command, args []string) {
 			nameArg, _ := cmd.Flags().GetString("name")

@@ -34,9 +34,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := mcp.InitializeServers(ctx, rootPath); err != nil {
-		errMsg.Println("Failed to initialize MCP servers: ", err)
-		os.Exit(1)
+	if app.OclaiConfig.InitMCP {
+		if err := mcp.InitializeServers(ctx, rootPath); err != nil {
+			errMsg.Println("Failed to initialize MCP servers: ", err)
+			os.Exit(1)
+		}
+
+		app.OclaiConfig.InitMCP = false
+		if err = app.UpdateConfig(rootPath); err != nil {
+			errMsg.Println(err)
+			os.Exit(1)
+		}
 	}
 
 	cmd.Execute()
