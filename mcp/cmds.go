@@ -21,7 +21,8 @@ var (
 var (
 	McpRootCmd = &cobra.Command{
 		Use:   "mcp",
-		Short: infoMsg.Sprint("Manage MCP servers"),
+		Short: "Manage MCP servers",
+		Long:  infoMsg.Sprint("Manage MCP servers. This command allows you to list, add, and remove MCP servers with various configurations."),
 		Example: `
 		oclai mcp ls
 		oclai mcp add --name everything --cmd npx --args '-y @modelcontextprotocol/server-everything'
@@ -33,11 +34,13 @@ var (
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List MCP servers",
+		Long:    infoMsg.Sprint("List MCP servers. This command displays all available MCP servers in a formatted list."),
 		Example: "oclai mcp ls",
 		Run: func(cmd *cobra.Command, args []string) {
 			servers := getServerList()
+
 			if len(servers) == 0 {
-				infoMsg.Println("No servers are added, Please add a server.")
+				infoMsg.Println("No servers are available. Please add a server 🌫️")
 				os.Exit(0)
 			}
 
@@ -61,12 +64,13 @@ var (
 		Use:     "remove [name]",
 		Aliases: []string{"rm"},
 		Short:   "Remove a MCP server",
+		Long:    infoMsg.Sprint("Remove a MCP server. This command allows you to remove a server by specifying its name."),
 		Example: "oclai mcp rm everything",
 		Run: func(cmd *cobra.Command, args []string) {
 			serverName := strings.TrimSpace(strings.Join(args, " "))
 
 			if serverName == "" {
-				errMsg.Println("Please provide the server name")
+				errMsg.Println("Please provide the server name 😒")
 				os.Exit(1)
 			}
 
@@ -83,6 +87,7 @@ var (
 	addServerCmd = &cobra.Command{
 		Use:   "add",
 		Short: "Add a MCP server",
+		Long:  infoMsg.Sprint("Add a MCP server. This command allows you to add a new server with various configurations such as command, endpoint, headers, and environment variables."),
 		Example: `
 		oclai mcp add --name everything --cmd npx --args '-y @modelcontextprotocol/server-everything'
 		oclai mcp add --name brave-search --cmd docker --args 'run -i --rm mcp/brave-search' --env=BRAVE_API_KEY:$BRAVE_API_KEY
@@ -103,16 +108,17 @@ var (
 			)
 
 			if nameArg == "" {
-				errMsg.Println("'--name' is required")
+				errMsg.Println("'--name' is required 🤌")
+				os.Exit(1)
 			}
 
 			if cmdArg == "" && endpointArg == "" {
-				errMsg.Println("'--cmd' or '--endpoint' is required")
+				errMsg.Println("'--cmd' or '--endpoint' is required 🤌")
 				os.Exit(1)
 			}
 
 			if cmdArg != "" && endpointArg != "" {
-				errMsg.Println("Cannot add '--cmd' and '--endpoint' together")
+				errMsg.Println("Cannot add '--cmd' and '--endpoint' together 🤝")
 				os.Exit(1)
 			}
 

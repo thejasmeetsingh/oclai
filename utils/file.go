@@ -76,7 +76,7 @@ func ReadFileContent(filePath string) ([]string, error) {
 
 	file, err := os.Open(filePath)
 	if err != nil {
-		return result, fmt.Errorf("failed to open file: %w", err)
+		return result, fmt.Errorf("failed to open file: %s", err)
 	}
 	defer file.Close()
 
@@ -88,7 +88,7 @@ func ReadPipedInput() ([]string, error) {
 
 	stat, err := os.Stdin.Stat()
 	if err != nil {
-		return result, fmt.Errorf("failed to check stdin status: %w", err)
+		return result, fmt.Errorf("failed to check stdin status: %s", err)
 	}
 
 	if (stat.Mode() & os.ModeCharDevice) == 0 {

@@ -262,7 +262,7 @@ func (s *session) handleCommand(command string) (*session, tea.Cmd) {
 
 	s.updateSessionMessages(sessionMessage{
 		_type:   errMsg,
-		content: fmt.Sprintf("Unknown command: %s. Type '/help' for available commands.", cmd),
+		content: fmt.Sprintf("Unknown command: %s. Type '/help' to view the available commands.", cmd),
 	})
 	s.clearInput()
 

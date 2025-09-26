@@ -19,7 +19,7 @@ func CheckOllamaConnection(url string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("ollama service returned status %d", resp.StatusCode)
+		return fmt.Errorf("API request failed with status %d", resp.StatusCode)
 	}
 
 	return nil
@@ -28,7 +28,7 @@ func CheckOllamaConnection(url string) error {
 func SystemPromptMessage() Message {
 	return Message{
 		Role:    SystemRole,
-		Content: "You are a helpful Assistant!",
+		Content: "You are a helpful assistant. You are designed to be helpful, honest, and safe.",
 	}
 }
 
@@ -41,7 +41,7 @@ func ListModels(url string) ([]ModelInfo, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("ollama service returned status %d", resp.StatusCode)
+		return nil, fmt.Errorf("API request failed with status %d", resp.StatusCode)
 	}
 
 	var modelsResp ModelsResponse

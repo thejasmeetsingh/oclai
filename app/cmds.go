@@ -17,14 +17,17 @@ import (
 	"github.com/thejasmeetsingh/oclai/utils"
 )
 
-var fileContents []string
+var (
+	fileContents []string
+	helpMsg      = color.New(color.FgBlue, color.Bold)
+)
 
 var (
 	Chat = &cobra.Command{
 		Use:     "chat",
 		Aliases: []string{"ch"},
 		Short:   "Start an interactive chat session",
-		Long:    color.New(color.FgBlue, color.Bold).Sprint("Start an interactive chat session with the specified model. If no model is specified, you'll be prompted to choose one."),
+		Long:    helpMsg.Sprint("Start an interactive chat session with the specified model. If no model is specified, you'll be prompted to choose one."),
 		Example: `
 		oclai chat
 		oclai ch
@@ -60,12 +63,12 @@ var (
 						// Try to parse as number first
 						choice, err = strconv.Atoi(input)
 						if err != nil {
-							errMsg.Println("Invalid input. Please try again")
+							errMsg.Println("Invalid input. Please try again ♾️")
 							continue
 						}
 
 						if choice < 1 || choice > len(models) {
-							errMsg.Println("Invalid choice. Please try again")
+							errMsg.Println("Invalid choice. Please try again ♾️")
 							continue
 						}
 					}
@@ -101,7 +104,7 @@ var (
 		Use:     "query [query]",
 		Aliases: []string{"q"},
 		Short:   "Ask a query to the model",
-		Long:    color.New(color.FgBlue, color.Bold).Sprint("Ask a query to the model. You can provide a query directly, pipe input from another command, or specify a file to analyze."),
+		Long:    helpMsg.Sprint("Ask a query to the model. You can provide a query directly, pipe input from another command, or specify a file to analyze."),
 		Args:    cobra.MinimumNArgs(1),
 		Example: `
 		oclai query "Hey what's up --model qwen3:latest"
@@ -175,7 +178,7 @@ var (
 )
 
 func init() {
-	Query.PersistentFlags().FuncP("file", "f", "Read from file and ask query about the content", func(s string) error {
+	Query.PersistentFlags().FuncP("file", "f", "Read from a file and ask query about the content", func(s string) error {
 		contents, err := utils.ReadFileContent(s)
 		if err != nil {
 			return err
