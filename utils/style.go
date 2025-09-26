@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"fmt"
-
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -84,6 +82,15 @@ var (
 			BorderStyle(lipgloss.RoundedBorder()).
 			BorderForeground(Theme.err).
 			BorderLeft(true)
+
+	otherStyle = lipgloss.NewStyle().
+			Foreground(Theme.accent).
+			Bold(true).
+			PaddingLeft(1).
+			PaddingRight(1).
+			BorderStyle(lipgloss.RoundedBorder()).
+			BorderForeground(Theme.accent).
+			BorderLeft(true)
 )
 
 // Enhanced message styles with icons and background
@@ -129,15 +136,19 @@ func ErrorMessage(message string) string {
 	return errorStyle.Render("✗ " + message)
 }
 
+func OtherMessage(message string) string {
+	return otherStyle.Render(message)
+}
+
 // Box-style messages for more important notifications
-func InfoBox(title, message string) string {
-	return infoBoxStyle.Render(fmt.Sprintf("ℹ %s\n%s", title, message))
+func InfoBox(message string) string {
+	return infoBoxStyle.Render(message)
 }
 
-func SuccessBox(title, message string) string {
-	return successBoxStyle.Render(fmt.Sprintf("✓ %s\n%s", title, message))
+func SuccessBox(message string) string {
+	return successBoxStyle.Render(message)
 }
 
-func ErrorBox(title, message string) string {
-	return errorBoxStyle.Render(fmt.Sprintf("✗ %s\n%s", title, message))
+func ErrorBox(message string) string {
+	return errorBoxStyle.Render(message)
 }
