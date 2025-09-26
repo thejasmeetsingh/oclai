@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -84,6 +86,36 @@ var (
 			BorderLeft(true)
 )
 
+// Enhanced message styles with icons and background
+var (
+	infoBoxStyle = lipgloss.NewStyle().
+			Foreground(Theme.info).
+			Background(lipgloss.AdaptiveColor{Light: "#EEF2FF", Dark: "#1E1B4B"}).
+			Bold(true).
+			Padding(0, 1).
+			Margin(1, 0).
+			BorderStyle(lipgloss.RoundedBorder()).
+			BorderForeground(Theme.info)
+
+	successBoxStyle = lipgloss.NewStyle().
+			Foreground(Theme.success).
+			Background(lipgloss.AdaptiveColor{Light: "#ECFDF5", Dark: "#064E3B"}).
+			Bold(true).
+			Padding(0, 1).
+			Margin(1, 0).
+			BorderStyle(lipgloss.RoundedBorder()).
+			BorderForeground(Theme.success)
+
+	errorBoxStyle = lipgloss.NewStyle().
+			Foreground(Theme.err).
+			Background(lipgloss.AdaptiveColor{Light: "#FEF2F2", Dark: "#7F1D1D"}).
+			Bold(true).
+			Padding(0, 1).
+			Margin(1, 0).
+			BorderStyle(lipgloss.RoundedBorder()).
+			BorderForeground(Theme.err)
+)
+
 // Message formatting functions
 func InfoMessage(message string) string {
 	return infoStyle.Render("ℹ " + message)
@@ -95,4 +127,17 @@ func SuccessMessage(message string) string {
 
 func ErrorMessage(message string) string {
 	return errorStyle.Render("✗ " + message)
+}
+
+// Box-style messages for more important notifications
+func InfoBox(title, message string) string {
+	return infoBoxStyle.Render(fmt.Sprintf("ℹ %s\n%s", title, message))
+}
+
+func SuccessBox(title, message string) string {
+	return successBoxStyle.Render(fmt.Sprintf("✓ %s\n%s", title, message))
+}
+
+func ErrorBox(title, message string) string {
+	return errorBoxStyle.Render(fmt.Sprintf("✗ %s\n%s", title, message))
 }
