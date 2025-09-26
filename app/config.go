@@ -14,6 +14,7 @@ type Config struct {
 	BaseURL      string `json:"baseURL"`
 	DefaultModel string `json:"defaultModel"`
 	NumCtx       int    `json:"numCtx"`
+	InitMCP      bool   `json:"initMCP"`
 }
 
 var OclaiConfig Config
@@ -29,6 +30,7 @@ func LoadConfig(rootPath string) error {
 	v.SetDefault("baseURL", "http://localhost:11434")
 	v.SetDefault("defaultModel", "")
 	v.SetDefault("numCtx", 8000)
+	v.SetDefault("initMCP", true)
 
 	v.SafeWriteConfigAs(filePath)
 	if err := v.ReadInConfig(); err != nil {
