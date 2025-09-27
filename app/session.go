@@ -11,8 +11,6 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/fatih/color"
 	"github.com/thejasmeetsingh/oclai/ollama"
 	"github.com/thejasmeetsingh/oclai/utils"
 )
@@ -79,7 +77,7 @@ func userPromptText() string {
 func getMarkdownString(content string) string {
 	contentMD, err := utils.ToMarkDown(content)
 	if err != nil {
-		color.New(color.FgRed).Print(err.Error())
+		fmt.Println(utils.ErrorMessage(err.Error()))
 		os.Exit(1)
 	}
 
@@ -95,7 +93,7 @@ func initSession(modelRequest ollama.ModelRequest, models []ollama.ModelInfo) *s
 	ti.ShowSuggestions = true
 
 	spinr := spinner.New()
-	spinr.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#c90076"))
+	spinr.Style = utils.LoaderStyle
 	spinr.Spinner = spinner.Points
 
 	vp := viewport.New(width, height)
@@ -130,17 +128,16 @@ func (s *session) updateSessionMessages(message sessionMessage) {
 
 	switch message._type {
 	case successMsg:
-		message.content = fmt.Sprintf("✨ %s", message.content)
+		message.content = utils.SuccessMessage(message.content) + "\n\n"
 	case errMsg:
-		message.content = fmt.Sprintf("⛔ %s", message.content)
+		message.content = utils.ErrorMessage(message.content) + "\n\n"
 	case usrMsg:
 		message.content = getMarkdownString(fmt.Sprintf("**[%s] You:** *%s*", timestamp, message.content))
 	case aiMsg:
 		message.content = getMarkdownString(fmt.Sprintf("**[%s] AI:** ", timestamp)) + message.content
 	}
 
-	lineBreak := getMarkdownString("--------")
-	s.messagesMarkdown += message.content + lineBreak
+	s.messagesMarkdown += message.content
 
 	s.vp.SetContent(s.messagesMarkdown)
 	s.vp.GotoBottom()
@@ -215,7 +212,7 @@ func handleModelSwitch(s *session, newModel string) (*session, tea.Cmd) {
 		s.modelRequest.Model = newModel
 		s.updateSessionMessages(sessionMessage{
 			_type:   successMsg,
-			content: "✓ Switched to model: " + newModel,
+			content: "Switched to model: " + newModel,
 		})
 	}
 
@@ -270,7 +267,7 @@ func (s *session) handleCommand(command string) (*session, tea.Cmd) {
 }
 
 func (s *session) sendChatRequest() {
-	modelResponse, err := chatWithTools(context.Background(), s.modelRequest, &s.spinnerMsg)
+	modelResponse, err := chatWithTools(context.Background(), s.modelRequest)
 	if err != nil {
 		s.updateSessionMessages(sessionMessage{
 			_type:   errMsg,
@@ -349,7 +346,7 @@ func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			})
 
 			s.waiting = true
-			s.spinnerMsg = "Thinking"
+			s.spinnerMsg = utils.OtherMessage("Thinking")
 
 			s.clearInput()
 			go s.sendChatRequest()
@@ -400,7 +397,7 @@ func (s *session) View() string {
 	}
 
 	if s.waiting {
-		bottom = lipgloss.NewStyle().Bold(true).Render(fmt.Sprintf("%s %s", s.spinnerMsg, s.spinner.View()))
+		bottom = s.spinnerMsg + " " + s.spinner.View()
 	} else {
 		bottom = s.textInput.View()
 	}

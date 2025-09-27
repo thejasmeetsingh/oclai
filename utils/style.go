@@ -93,6 +93,11 @@ var (
 			BorderLeft(true)
 )
 
+// Loader/Spinner Style
+var LoaderStyle = lipgloss.NewStyle().
+	Foreground(Theme.primary).
+	Bold(true)
+
 // Enhanced message styles with icons and background
 var (
 	infoBoxStyle = lipgloss.NewStyle().

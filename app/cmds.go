@@ -144,7 +144,7 @@ var (
 				Tools: mcp.GetAllTools(),
 			}
 
-			modelResponse, err := chatWithTools(context.Background(), request, nil)
+			modelResponse, err := chatWithTools(context.Background(), request)
 			if err != nil {
 				fmt.Println(utils.ErrorMessage(err.Error()))
 				os.Exit(1)
