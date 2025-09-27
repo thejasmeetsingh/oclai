@@ -159,7 +159,7 @@ var (
 			if modelResponse.TotalDuration > 0 {
 				duration := time.Duration(modelResponse.TotalDuration)
 				tokensPerSec := float64(modelResponse.EvalCount) / duration.Seconds()
-				stat := utils.SuccessBox(fmt.Sprintf("✓ Generated %d tokens in %v (%.1f tokens/sec)\n\n",
+				stat := utils.SuccessBox(fmt.Sprintf("✓ Generated %d tokens in %v (%.1f tokens/sec)",
 					modelResponse.EvalCount, duration, tokensPerSec))
 
 				result = fmt.Sprintf("%s\n%s", result, stat)
