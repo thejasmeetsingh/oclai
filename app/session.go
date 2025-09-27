@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -124,17 +123,13 @@ func (s *session) addModelMessage(message ollama.Message) {
 }
 
 func (s *session) updateSessionMessages(message sessionMessage) {
-	timestamp := time.Now().Format(time.Kitchen)
-
 	switch message._type {
 	case successMsg:
 		message.content = utils.SuccessBox(message.content)
 	case errMsg:
 		message.content = utils.ErrorBox(message.content)
 	case usrMsg:
-		message.content = utils.UserMsgBox(timestamp, message.content)
-	case aiMsg:
-		message.content = utils.AiMsgBox(timestamp, message.content)
+		message.content = utils.UserMsgBox(message.content)
 	}
 
 	s.messagesMarkdown += message.content
