@@ -9,5 +9,5 @@ An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to yo
 - [x] Integrate the MCP Client and set default MCP servers to enhance functionality.
 - [x] Update the configuration system to allow users to add their own MCP servers.
 - [x] Implement lazy-loading for MCP servers to optimize performance. Instead of initializing all servers at once, load them on demand.
-- [ ] Improve the interface to make it more visually appealing and user-friendly.
+- [x] Improve the interface to make it more visually appealing and user-friendly.
 - [ ] Use goreleaser library and automate the release process using GitHub actions.

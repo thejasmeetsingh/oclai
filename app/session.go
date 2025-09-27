@@ -5,14 +5,11 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/fatih/color"
 	"github.com/thejasmeetsingh/oclai/ollama"
 	"github.com/thejasmeetsingh/oclai/utils"
 )
@@ -73,13 +70,13 @@ var subcommands = map[string]commandInfo{
 }
 
 func userPromptText() string {
-	return "💬 You: "
+	return utils.OtherMessage("💬 You: ")
 }
 
 func getMarkdownString(content string) string {
 	contentMD, err := utils.ToMarkDown(content)
 	if err != nil {
-		color.New(color.FgRed).Print(err.Error())
+		fmt.Println(utils.ErrorMessage(err.Error()))
 		os.Exit(1)
 	}
 
@@ -95,7 +92,7 @@ func initSession(modelRequest ollama.ModelRequest, models []ollama.ModelInfo) *s
 	ti.ShowSuggestions = true
 
 	spinr := spinner.New()
-	spinr.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#c90076"))
+	spinr.Style = utils.LoaderStyle
 	spinr.Spinner = spinner.Points
 
 	vp := viewport.New(width, height)
@@ -126,21 +123,16 @@ func (s *session) addModelMessage(message ollama.Message) {
 }
 
 func (s *session) updateSessionMessages(message sessionMessage) {
-	timestamp := time.Now().Format(time.Kitchen)
-
 	switch message._type {
 	case successMsg:
-		message.content = fmt.Sprintf("✨ %s", message.content)
+		message.content = utils.SuccessBox(message.content)
 	case errMsg:
-		message.content = fmt.Sprintf("⛔ %s", message.content)
+		message.content = utils.ErrorBox(message.content)
 	case usrMsg:
-		message.content = getMarkdownString(fmt.Sprintf("**[%s] You:** *%s*", timestamp, message.content))
-	case aiMsg:
-		message.content = getMarkdownString(fmt.Sprintf("**[%s] AI:** ", timestamp)) + message.content
+		message.content = utils.UserMsgBox(message.content)
 	}
 
-	lineBreak := getMarkdownString("--------")
-	s.messagesMarkdown += message.content + lineBreak
+	s.messagesMarkdown += message.content
 
 	s.vp.SetContent(s.messagesMarkdown)
 	s.vp.GotoBottom()
@@ -215,7 +207,7 @@ func handleModelSwitch(s *session, newModel string) (*session, tea.Cmd) {
 		s.modelRequest.Model = newModel
 		s.updateSessionMessages(sessionMessage{
 			_type:   successMsg,
-			content: "✓ Switched to model: " + newModel,
+			content: "Switched to model: " + newModel,
 		})
 	}
 
@@ -262,7 +254,7 @@ func (s *session) handleCommand(command string) (*session, tea.Cmd) {
 
 	s.updateSessionMessages(sessionMessage{
 		_type:   errMsg,
-		content: fmt.Sprintf("Unknown command: %s. Type '/help' for available commands.", cmd),
+		content: fmt.Sprintf("Unknown command: %s. Type '/help' to view the available commands.", cmd),
 	})
 	s.clearInput()
 
@@ -270,7 +262,7 @@ func (s *session) handleCommand(command string) (*session, tea.Cmd) {
 }
 
 func (s *session) sendChatRequest() {
-	modelResponse, err := chatWithTools(context.Background(), s.modelRequest, &s.spinnerMsg)
+	modelResponse, err := chatWithTools(context.Background(), s.modelRequest)
 	if err != nil {
 		s.updateSessionMessages(sessionMessage{
 			_type:   errMsg,
@@ -400,7 +392,7 @@ func (s *session) View() string {
 	}
 
 	if s.waiting {
-		bottom = lipgloss.NewStyle().Bold(true).Render(fmt.Sprintf("%s %s", s.spinnerMsg, s.spinner.View()))
+		bottom = s.spinnerMsg + " " + s.spinner.View()
 	} else {
 		bottom = s.textInput.View()
 	}

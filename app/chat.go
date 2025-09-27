@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 
 	goMCP "github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/thejasmeetsingh/oclai/mcp"
@@ -23,7 +22,7 @@ func getToolResp(ctx context.Context, tool ollama.ToolCall) (string, error) {
 	return mcp.CallTool(ctx, mcpSession, toolParams)
 }
 
-func chatWithTools(ctx context.Context, request ollama.ModelRequest, notify *string) (*ollama.ModelResponse, error) {
+func chatWithTools(ctx context.Context, request ollama.ModelRequest) (*ollama.ModelResponse, error) {
 	request.Options = map[string]any{"num_ctx": OclaiConfig.NumCtx}
 
 	response, err := ollama.Chat(OclaiConfig.BaseURL, request)
@@ -35,11 +34,6 @@ func chatWithTools(ctx context.Context, request ollama.ModelRequest, notify *str
 
 	if len(toolCalls) != 0 {
 		for _, tool := range toolCalls {
-			if notify != nil {
-				msg := fmt.Sprintf("Calling '%s' Tool", tool.Function.Name)
-				notify = &msg
-			}
-
 			toolResp, err := getToolResp(ctx, tool)
 			if err != nil {
 				return nil, err
@@ -51,11 +45,7 @@ func chatWithTools(ctx context.Context, request ollama.ModelRequest, notify *str
 			})
 		}
 
-		if notify != nil {
-			msg := "Processing Tool Response"
-			notify = &msg
-		}
-		return chatWithTools(ctx, request, notify)
+		return chatWithTools(ctx, request)
 	}
 
 	return response, nil

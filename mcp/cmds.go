@@ -5,23 +5,17 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/thejasmeetsingh/oclai/utils"
 )
 
-var (
-	rootPath = ""
-
-	infoMsg    = color.New(color.FgBlue, color.Bold)
-	errMsg     = color.New(color.FgRed)
-	successMsg = color.New(color.FgGreen)
-)
+var rootPath = ""
 
 var (
 	McpRootCmd = &cobra.Command{
 		Use:   "mcp",
-		Short: infoMsg.Sprint("Manage MCP servers"),
+		Short: "Manage MCP servers",
+		Long:  utils.InfoBox("Manage MCP servers. This command allows you to list, add, and remove MCP servers with various configurations."),
 		Example: `
 		oclai mcp ls
 		oclai mcp add --name everything --cmd npx --args '-y @modelcontextprotocol/server-everything'
@@ -33,11 +27,13 @@ var (
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List MCP servers",
+		Long:    utils.InfoBox("List MCP servers. This command displays all available MCP servers in a formatted list."),
 		Example: "oclai mcp ls",
 		Run: func(cmd *cobra.Command, args []string) {
 			servers := getServerList()
+
 			if len(servers) == 0 {
-				infoMsg.Println("No servers are added, Please add a server.")
+				fmt.Println(utils.ErrorBox("No servers are available. Please add a server 🌫️"))
 				os.Exit(0)
 			}
 
@@ -49,7 +45,7 @@ var (
 
 			md, err := utils.ToMarkDown(result)
 			if err != nil {
-				errMsg.Println("Error caught while converting to markdown: ", err)
+				fmt.Println(utils.ErrorMessage(fmt.Sprintf("Error caught while converting to markdown: %s", err)))
 				os.Exit(1)
 			}
 
@@ -61,28 +57,30 @@ var (
 		Use:     "remove [name]",
 		Aliases: []string{"rm"},
 		Short:   "Remove a MCP server",
+		Long:    utils.InfoBox("Remove a MCP server. This command allows you to remove a server by specifying its name."),
 		Example: "oclai mcp rm everything",
 		Run: func(cmd *cobra.Command, args []string) {
 			serverName := strings.TrimSpace(strings.Join(args, " "))
 
 			if serverName == "" {
-				errMsg.Println("Please provide the server name")
+				fmt.Println(utils.ErrorMessage("Please provide the server name 😒"))
 				os.Exit(1)
 			}
 
 			err := removeServer(rootPath, serverName)
 			if err != nil {
-				errMsg.Println("Error caught while removing a server: ", err)
+				fmt.Println(utils.ErrorMessage(fmt.Sprintf("Error caught while removing a server: %s", err)))
 				os.Exit(1)
 			}
 
-			successMsg.Printf("'%s' server removed successfully!\n", serverName)
+			fmt.Println(utils.SuccessBox(fmt.Sprintf("'%s' server removed successfully!", serverName)))
 		},
 	}
 
 	addServerCmd = &cobra.Command{
 		Use:   "add",
 		Short: "Add a MCP server",
+		Long:  utils.InfoBox("Add a MCP server. This command allows you to add a new server with various configurations such as command, endpoint, headers, and environment variables."),
 		Example: `
 		oclai mcp add --name everything --cmd npx --args '-y @modelcontextprotocol/server-everything'
 		oclai mcp add --name brave-search --cmd docker --args 'run -i --rm mcp/brave-search' --env=BRAVE_API_KEY:$BRAVE_API_KEY
@@ -103,16 +101,17 @@ var (
 			)
 
 			if nameArg == "" {
-				errMsg.Println("'--name' is required")
+				fmt.Println(utils.ErrorMessage("'--name' is required 🤌"))
+				os.Exit(1)
 			}
 
 			if cmdArg == "" && endpointArg == "" {
-				errMsg.Println("'--cmd' or '--endpoint' is required")
+				fmt.Println(utils.ErrorMessage("'--cmd' or '--endpoint' is required 🤌"))
 				os.Exit(1)
 			}
 
 			if cmdArg != "" && endpointArg != "" {
-				errMsg.Println("Cannot add '--cmd' and '--endpoint' together")
+				fmt.Println(utils.ErrorMessage("Cannot add '--cmd' and '--endpoint' together 🤝"))
 				os.Exit(1)
 			}
 
@@ -139,11 +138,11 @@ var (
 			})
 
 			if err != nil {
-				errMsg.Println("Error caught while adding the server: ", err)
+				fmt.Println(utils.ErrorMessage(fmt.Sprintf("Error caught while adding the server: %s", err)))
 				os.Exit(1)
 			}
 
-			successMsg.Println("Server added successfully!")
+			fmt.Println(utils.SuccessBox("Server added successfully!"))
 		},
 	}
 )
@@ -165,7 +164,7 @@ func getArrayToMap(arr []string) map[string]string {
 func init() {
 	_rootPath, err := utils.GetAppRootDir()
 	if err != nil {
-		errMsg.Println("Error caught while retreiving root path: ", err)
+		fmt.Println(utils.ErrorMessage(fmt.Sprintf("Error caught while retreiving root path: %s", err)))
 		os.Exit(1)
 	}
 

@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/thejasmeetsingh/oclai/app"
 	"github.com/thejasmeetsingh/oclai/mcp"
@@ -15,28 +14,19 @@ import (
 	"github.com/thejasmeetsingh/oclai/utils"
 )
 
-var (
-	rootPath = ""
-
-	infoMsg    = color.New(color.FgBlue, color.Bold)
-	errMsg     = color.New(color.FgRed)
-	successMsg = color.New(color.FgGreen)
-)
+var rootPath = ""
 
 var (
-	// rootCmd is the main command for the CLI application.
-	// It serves as the entry point for all CLI commands.
 	rootCmd = &cobra.Command{
 		Use:     "oclai",
 		Short:   "A completely offline agentic CLI",
-		Long:    infoMsg.Sprint("An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."),
+		Long:    utils.InfoBox("An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."),
 		Example: `oclai q "What's the latest news of today"`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) != 0 {
 				return
 			}
 
-			// Check if any global flags have been changed
 			globalCmds := []string{"baseURL", "model", "ctx"}
 			for _, gloglobalCmd := range globalCmds {
 				if cmd.Flags().Lookup(gloglobalCmd).Changed {
@@ -44,107 +34,113 @@ var (
 				}
 			}
 
-			// If no arguments were provided and no global flags were changed, show help
 			cmd.Help()
 		},
 	}
 
-	// Command for viewing ollama models
 	modelsCmd = &cobra.Command{
 		Use:   "models",
 		Short: "List available models",
-		Long:  infoMsg.Sprint("Display all models currently available in your local Ollama installation."),
+		Long:  utils.InfoBox("Display all models currently available in your local Ollama installation."),
 		Run: func(cmd *cobra.Command, args []string) {
 			content, err := ollama.ShowModels(app.OclaiConfig.BaseURL, nil)
 			if err != nil {
-				errMsg.Println("Error listing models:", err)
+				fmt.Println(utils.ErrorMessage(fmt.Sprintf("Error listing models: %s", err.Error())))
 				os.Exit(1)
 			}
 			fmt.Println(content)
 		},
 	}
 
-	// Command for checking ollama service status
 	statusCmd = &cobra.Command{
 		Use:   "status",
 		Short: "Check Ollama service status",
-		Long:  infoMsg.Sprint("Check if Ollama service is running and display connection information."),
+		Long:  utils.InfoBox("Check if Ollama service is running and display connection information."),
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := ollama.CheckOllamaConnection(app.OclaiConfig.BaseURL); err != nil {
-				errMsg.Println("Ollama Status:", err)
+				fmt.Println(utils.ErrorMessage(fmt.Sprintf("Ollama Status: %s", err.Error())))
 				os.Exit(1)
 			}
 
-			successMsg.Println("✅ Ollama is running at:", app.OclaiConfig.BaseURL)
+			fmt.Println(utils.SuccessBox(fmt.Sprintf("Ollama is running at: %s", app.OclaiConfig.BaseURL)))
 		},
 	}
 )
 
-// setBaseURL configures the base URL for the Ollama API.
-// It validates the input and updates the configuration if valid.
 func setBaseURL(arg string) error {
 	arg = strings.TrimSpace(arg)
 
 	if arg == "" {
-		return fmt.Errorf("baseURL cannot be empty. Please provide a valid URL")
+		return fmt.Errorf("✗ 'baseURL' cannot be empty. Please provide a valid URL")
 	}
 
-	// Parse the URL and validate it
 	baseURL, err := url.Parse(strings.TrimSpace(arg))
 	if err != nil {
-		return fmt.Errorf("invalid URL format: %w. Please enter a valid URL", err)
+		return fmt.Errorf("✗ invalid URL format: %s. Please enter a valid URL", err.Error())
 	}
 
-	// Update the configuration with the new base URL
 	app.OclaiConfig.BaseURL = baseURL.String()
-	return app.UpdateConfig(rootPath)
+	if err = app.UpdateConfig(rootPath); err != nil {
+		return err
+	}
+
+	fmt.Println(utils.SuccessBox("BaseURL updated successfully!"))
+
+	return nil
 }
 
-// setDefaultModel sets the default model to be used by the CLI.
-// It validates the input and updates the configuration if valid.
 func setDefaultModel(arg string) error {
 	arg = strings.TrimSpace(arg)
 
 	if arg == "" {
-		return fmt.Errorf("model value cannot be empty. Please provide a valid model name")
+		return fmt.Errorf("✗ model value cannot be empty. Please provide a valid model name")
 	}
 
-	// Update the configuration with the new default model
 	app.OclaiConfig.DefaultModel = strings.TrimSpace(arg)
-	return app.UpdateConfig(rootPath)
+	if err := app.UpdateConfig(rootPath); err != nil {
+		return err
+	}
+
+	fmt.Println(utils.SuccessBox("Default Model updated successfully!"))
+
+	return nil
 }
 
 func setNumCtx(arg string) error {
 	arg = strings.TrimSpace(arg)
 
 	if arg == "" {
-		return fmt.Errorf("'num_ctx' value should not be empty")
+		return fmt.Errorf("✗ 'num_ctx' value should not be empty")
 	}
 
 	numCtx, err := strconv.Atoi(arg)
 	if err != nil {
-		return fmt.Errorf("invalid value")
+		return fmt.Errorf("✗ value should be a valid integer")
 	}
 
 	app.OclaiConfig.NumCtx = numCtx
-	return app.UpdateConfig(rootPath)
+	if err := app.UpdateConfig(rootPath); err != nil {
+		return err
+	}
+
+	fmt.Println(utils.SuccessBox("NumCtx value updated successfully!"))
+
+	return nil
 }
 
 func init() {
 	_rootPath, err := utils.GetAppRootDir()
 	if err != nil {
-		errMsg.Println("Error caught while retreiving root path: ", err)
+		fmt.Println(utils.ErrorMessage(fmt.Sprintf("Error caught while retreiving root path: %s", err.Error())))
 		os.Exit(1)
 	}
 
 	rootPath = _rootPath
 
-	// Add persistent flags to the root command
 	rootCmd.PersistentFlags().Func("baseURL", "Set Ollama BaseURL", setBaseURL)
 	rootCmd.PersistentFlags().Func("model", "Set Default Model", setDefaultModel)
 	rootCmd.PersistentFlags().Func("ctx", "Set Context Limit", setNumCtx)
 
-	// Add the query subcommand
 	rootCmd.AddCommand(
 		modelsCmd,
 		statusCmd,
@@ -154,12 +150,10 @@ func init() {
 	)
 }
 
-// Execute runs the root command.
-// It handles any errors that occur during command execution.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
-		errMsg.Println("Error executing command:", err)
+		fmt.Println(utils.ErrorMessage(fmt.Sprintf("Error executing command: %s", err.Error())))
 		os.Exit(1)
 	}
 }
