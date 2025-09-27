@@ -71,7 +71,7 @@ var subcommands = map[string]commandInfo{
 }
 
 func userPromptText() string {
-	return "💬 You: "
+	return utils.OtherMessage("💬 You: ")
 }
 
 func getMarkdownString(content string) string {
@@ -128,13 +128,13 @@ func (s *session) updateSessionMessages(message sessionMessage) {
 
 	switch message._type {
 	case successMsg:
-		message.content = utils.SuccessMessage(message.content) + "\n\n"
+		message.content = utils.SuccessBox(message.content)
 	case errMsg:
-		message.content = utils.ErrorMessage(message.content) + "\n\n"
+		message.content = utils.ErrorBox(message.content)
 	case usrMsg:
-		message.content = getMarkdownString(fmt.Sprintf("**[%s] You:** *%s*", timestamp, message.content))
+		message.content = utils.UserMsgBox(timestamp, message.content)
 	case aiMsg:
-		message.content = getMarkdownString(fmt.Sprintf("**[%s] AI:** ", timestamp)) + message.content
+		message.content = utils.AiMsgBox(timestamp, message.content)
 	}
 
 	s.messagesMarkdown += message.content
@@ -346,7 +346,7 @@ func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			})
 
 			s.waiting = true
-			s.spinnerMsg = utils.OtherMessage("Thinking")
+			s.spinnerMsg = "Thinking"
 
 			s.clearInput()
 			go s.sendChatRequest()

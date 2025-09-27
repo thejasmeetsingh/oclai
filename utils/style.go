@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -126,6 +128,24 @@ var (
 			Margin(1, 0).
 			BorderStyle(lipgloss.RoundedBorder()).
 			BorderForeground(Theme.err)
+
+	userMsgBoxStyle = lipgloss.NewStyle().
+			Foreground(Theme.primary).
+			Background(lipgloss.AdaptiveColor{Light: "#EEF2FF", Dark: "#262905ff"}).
+			Bold(true).
+			Padding(0, 1).
+			Margin(1, 0).
+			BorderStyle(lipgloss.RoundedBorder()).
+			BorderForeground(Theme.primary)
+
+	aiMsgBoxStyle = lipgloss.NewStyle().
+			Foreground(Theme.secondary).
+			Background(lipgloss.AdaptiveColor{Light: "#EEF2FF", Dark: "#2b0919ff"}).
+			Bold(true).
+			Padding(0, 1).
+			Margin(1, 0).
+			BorderStyle(lipgloss.RoundedBorder()).
+			BorderForeground(Theme.secondary)
 )
 
 // Message formatting functions
@@ -156,4 +176,12 @@ func SuccessBox(message string) string {
 
 func ErrorBox(message string) string {
 	return errorBoxStyle.Render(message)
+}
+
+func UserMsgBox(timestamp, message string) string {
+	return userMsgBoxStyle.Render(fmt.Sprintf("[%s] 👤 You\n%s", timestamp, message))
+}
+
+func AiMsgBox(timestamp, message string) string {
+	return aiMsgBoxStyle.Render(fmt.Sprintf("[%s] 🤖 AI\n%s", timestamp, message))
 }
