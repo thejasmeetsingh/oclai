@@ -14,19 +14,23 @@ import (
 	"github.com/thejasmeetsingh/oclai/utils"
 )
 
+// rootPath stores the application root directory path
 var rootPath = ""
 
 var (
+	// rootCmd represents the base command when called without any subcommands
 	rootCmd = &cobra.Command{
 		Use:     "oclai",
 		Short:   "A completely offline agentic CLI",
 		Long:    utils.InfoBox("An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."),
 		Example: `oclai q "Tell me about the roman empire"`,
 		Run: func(cmd *cobra.Command, args []string) {
+			// If there are arguments, do nothing (handled by other commands)
 			if len(args) != 0 {
 				return
 			}
 
+			// Check if any global flags have been changed
 			globalCmds := []string{"baseURL", "model", "ctx"}
 			for _, gloglobalCmd := range globalCmds {
 				if cmd.Flags().Lookup(gloglobalCmd).Changed {
@@ -34,15 +38,18 @@ var (
 				}
 			}
 
+			// If no flags changed, show help
 			cmd.Help()
 		},
 	}
 
+	// modelsCmd lists available models
 	modelsCmd = &cobra.Command{
 		Use:   "models",
 		Short: "List available models",
 		Long:  utils.InfoBox("Display all models currently available in your local Ollama installation."),
 		Run: func(cmd *cobra.Command, args []string) {
+			// Fetch and display models from Ollama
 			content, err := ollama.ShowModels(app.OclaiConfig.BaseURL, nil)
 			if err != nil {
 				fmt.Println(utils.ErrorMessage(fmt.Sprintf("Error listing models: %s", err.Error())))
@@ -52,11 +59,13 @@ var (
 		},
 	}
 
+	// statusCmd checks Ollama service status
 	statusCmd = &cobra.Command{
 		Use:   "status",
 		Short: "Check Ollama service status",
 		Long:  utils.InfoBox("Check if Ollama service is running and display connection information."),
 		Run: func(cmd *cobra.Command, args []string) {
+			// Check if Ollama is running
 			if err := ollama.CheckOllamaConnection(app.OclaiConfig.BaseURL); err != nil {
 				fmt.Println(utils.ErrorMessage(fmt.Sprintf("Ollama Status: %s", err.Error())))
 				os.Exit(1)
@@ -67,18 +76,22 @@ var (
 	}
 )
 
+// setBaseURL updates the base URL configuration
 func setBaseURL(arg string) error {
 	arg = strings.TrimSpace(arg)
 
+	// Validate input
 	if arg == "" {
 		return fmt.Errorf("✗ 'baseURL' cannot be empty. Please provide a valid URL")
 	}
 
+	// Parse URL
 	baseURL, err := url.Parse(strings.TrimSpace(arg))
 	if err != nil {
 		return fmt.Errorf("✗ invalid URL format: %s. Please enter a valid URL", err.Error())
 	}
 
+	// Update configuration
 	app.OclaiConfig.BaseURL = baseURL.String()
 	if err = app.UpdateConfig(rootPath); err != nil {
 		return err
@@ -89,13 +102,28 @@ func setBaseURL(arg string) error {
 	return nil
 }
 
+// setDefaultModel updates the default model configuration
 func setDefaultModel(arg string) error {
 	arg = strings.TrimSpace(arg)
 
+	// Validate input
 	if arg == "" {
 		return fmt.Errorf("✗ model value cannot be empty. Please provide a valid model name")
 	}
 
+	model := strings.TrimSpace(arg)
+
+	// Check if the model exists
+	isExists, err := ollama.IsModelExists(app.OclaiConfig.BaseURL, model, nil)
+	if err != nil {
+		return err
+	}
+
+	if !isExists {
+		return fmt.Errorf("'%s' model does not exists", model)
+	}
+
+	// Update configuration
 	app.OclaiConfig.DefaultModel = strings.TrimSpace(arg)
 	if err := app.UpdateConfig(rootPath); err != nil {
 		return err
@@ -106,18 +134,22 @@ func setDefaultModel(arg string) error {
 	return nil
 }
 
+// setNumCtx updates the context limit configuration
 func setNumCtx(arg string) error {
 	arg = strings.TrimSpace(arg)
 
+	// Validate input
 	if arg == "" {
 		return fmt.Errorf("✗ 'num_ctx' value should not be empty")
 	}
 
+	// Convert to integer
 	numCtx, err := strconv.Atoi(arg)
 	if err != nil {
 		return fmt.Errorf("✗ value should be a valid integer")
 	}
 
+	// Update configuration
 	app.OclaiConfig.NumCtx = numCtx
 	if err := app.UpdateConfig(rootPath); err != nil {
 		return err
@@ -129,6 +161,7 @@ func setNumCtx(arg string) error {
 }
 
 func init() {
+	// Get application root directory
 	_rootPath, err := utils.GetAppRootDir()
 	if err != nil {
 		fmt.Println(utils.ErrorMessage(fmt.Sprintf("Error caught while retreiving root path: %s", err.Error())))
@@ -137,10 +170,12 @@ func init() {
 
 	rootPath = _rootPath
 
+	// Register command flags
 	rootCmd.PersistentFlags().Func("baseURL", "Set Ollama BaseURL", setBaseURL)
 	rootCmd.PersistentFlags().Func("model", "Set Default Model", setDefaultModel)
 	rootCmd.PersistentFlags().Func("ctx", "Set Context Limit", setNumCtx)
 
+	// Add sub-commands to root
 	rootCmd.AddCommand(
 		modelsCmd,
 		statusCmd,
@@ -151,6 +186,7 @@ func init() {
 }
 
 func Execute() {
+	// Execute root command
 	err := rootCmd.Execute()
 	if err != nil {
 		fmt.Println(utils.ErrorMessage(fmt.Sprintf("Error executing command: %s", err.Error())))
