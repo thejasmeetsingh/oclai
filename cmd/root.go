@@ -21,7 +21,7 @@ var (
 		Use:     "oclai",
 		Short:   "A completely offline agentic CLI",
 		Long:    utils.InfoBox("An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."),
-		Example: `oclai q "What's the latest news of today"`,
+		Example: `oclai q "Tell me about the roman empire"`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) != 0 {
 				return
