@@ -133,7 +133,15 @@ var (
 			Padding(0, 1).
 			Margin(1, 0).
 			BorderStyle(lipgloss.RoundedBorder()).
-			BorderForeground(Theme.primary)
+			BorderForeground(Theme.primary).
+			BorderLeft(true)
+
+	aiMsgBoxStyle = lipgloss.NewStyle().
+			Padding(0, 1).
+			Margin(1, 0).
+			BorderStyle(lipgloss.RoundedBorder()).
+			BorderForeground(Theme.secondary).
+			BorderLeft(true)
 )
 
 // Message formatting functions
@@ -166,6 +174,10 @@ func ErrorBox(message string) string {
 	return errorBoxStyle.Render(message)
 }
 
-func UserMsgBox(message string) string {
-	return userMsgBoxStyle.Render(fmt.Sprintf("👤 %s", lipgloss.NewStyle().Italic(true).Render(message)))
+func UserMsgBox(timestamp, message string) string {
+	return userMsgBoxStyle.Render(fmt.Sprintf("[%s] 👤:\n%s", timestamp, message))
+}
+
+func AiMsgBox(timestamp, message string) string {
+	return aiMsgBoxStyle.Render(fmt.Sprintf("[%s] 🤖:\n%s", timestamp, message))
 }
