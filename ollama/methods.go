@@ -104,3 +104,26 @@ func Chat(url string, request ModelRequest) (*ModelResponse, error) {
 	}
 	return nil, fmt.Errorf("no response is returned from ollama service")
 }
+
+// A util function to check if the given model exists or not.
+func IsModelExists(url, model string, models *[]ModelInfo) (bool, error) {
+	if models == nil {
+		newModels, err := ListModels(url)
+		if err != nil {
+			return false, err
+		}
+		models = &newModels
+	}
+
+	if len(*models) == 0 {
+		return false, fmt.Errorf("no models found. Please install a model using: ollama pull <model-name>")
+	}
+
+	for _, _model := range *models {
+		if strings.EqualFold(model, _model.Name) {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
