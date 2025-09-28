@@ -16,9 +16,11 @@ import (
 	"github.com/thejasmeetsingh/oclai/utils"
 )
 
+// fileContents stores the content of files that need to be analyzed
 var fileContents []string
 
 var (
+	// Chat command starts an interactive chat session with the specified model
 	Chat = &cobra.Command{
 		Use:     "chat",
 		Aliases: []string{"ch"},
@@ -30,14 +32,17 @@ var (
 		oclai chat --model gemma3:latest
 	`,
 		Run: func(cmd *cobra.Command, args []string) {
+			// Use the default model if not specified
 			model := OclaiConfig.DefaultModel
 
+			// List available models
 			models, err := ollama.ListModels(OclaiConfig.BaseURL)
 			if err != nil {
 				fmt.Println(utils.ErrorMessage(fmt.Sprintf("Error listing models: %s", err.Error())))
 				os.Exit(1)
 			}
 
+			// If no model is specified, prompt the user to choose one
 			if model == "" {
 				modelsContent, err := ollama.ShowModels(OclaiConfig.BaseURL, &models)
 				if err != nil {
@@ -73,6 +78,7 @@ var (
 				model = models[choice-1].Name
 			}
 
+			// Create the model request with the selected model and available tools
 			modelRequest := ollama.ModelRequest{
 				Model:    model,
 				Think:    false,
@@ -80,12 +86,14 @@ var (
 				Tools:    mcp.GetAllTools(),
 			}
 
+			// Initialize the chat session with the model
 			program := tea.NewProgram(
 				initSession(modelRequest, models),
 				tea.WithAltScreen(),
 				tea.WithMouseCellMotion(),
 			)
 
+			// Run the chat session
 			if _, err := program.Run(); err != nil {
 				fmt.Println(utils.ErrorMessage(err.Error()))
 				os.Exit(1)
@@ -95,6 +103,7 @@ var (
 		},
 	}
 
+	// Query command asks a query to the model
 	Query = &cobra.Command{
 		Use:     "query [query]",
 		Aliases: []string{"q"},
@@ -107,19 +116,23 @@ var (
 		oclai q "Analyze this code" -f /path/main.py
 	`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
+			// Check if a default model is selected
 			if OclaiConfig.DefaultModel == "" {
 				return fmt.Errorf("%s", utils.ErrorMessage("please select a default model 🤖"))
 			}
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
+			// Get the query from command line arguments
 			query := strings.TrimSpace(strings.Join(args, " "))
 
+			// If no query is provided, show an error message
 			if query == "" {
 				fmt.Println(utils.ErrorMessage("Please provide a query 😒"))
 				return
 			}
 
+			// If no file content is provided, read from stdin
 			if len(fileContents) == 0 {
 				contents, err := utils.ReadPipedInput()
 				if err != nil {
@@ -130,10 +143,12 @@ var (
 				fileContents = contents
 			}
 
+			// If file content is provided, format the query with the content
 			if len(fileContents) != 0 {
 				query = fmt.Sprintf("```\n%s\n```\nUser Query: %s", strings.Join(fileContents, "\n"), query)
 			}
 
+			// Create the model request with the default model and the query
 			request := ollama.ModelRequest{
 				Model: OclaiConfig.DefaultModel,
 				Think: false,
@@ -144,18 +159,21 @@ var (
 				Tools: mcp.GetAllTools(),
 			}
 
+			// Get the model response
 			modelResponse, err := chatWithTools(context.Background(), request)
 			if err != nil {
 				fmt.Println(utils.ErrorMessage(err.Error()))
 				os.Exit(1)
 			}
 
+			// Convert the response to markdown format
 			result, err := utils.ToMarkDown(modelResponse.Message.Content)
 			if err != nil {
 				fmt.Println(utils.ErrorMessage(err.Error()))
 				os.Exit(1)
 			}
 
+			// Add performance statistic
 			if modelResponse.TotalDuration > 0 {
 				duration := time.Duration(modelResponse.TotalDuration)
 				tokensPerSec := float64(modelResponse.EvalCount) / duration.Seconds()
@@ -171,6 +189,7 @@ var (
 )
 
 func init() {
+	// Register the file flag to read from a file and ask a query about the content
 	Query.PersistentFlags().FuncP("file", "f", utils.OtherMessage("Read from a file and ask query about the content"), func(s string) error {
 		contents, err := utils.ReadFileContent(s)
 		if err != nil {

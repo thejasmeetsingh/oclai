@@ -15,10 +15,12 @@ import (
 	"github.com/thejasmeetsingh/oclai/utils"
 )
 
+// Constants for message types used in the application
 const (
-	height int = 20
-	width  int = 100
+	height int = 20  // Height of the viewport in lines
+	width  int = 100 // Width of the viewport in characters
 
+	// messageType is used to differentiate between different types of messages
 	infoMsg    messageType = "info"
 	successMsg messageType = "success"
 	errMsg     messageType = "error"
@@ -29,11 +31,13 @@ const (
 type (
 	messageType string
 
+	// sessionMessage represents a message with a type and content
 	sessionMessage struct {
 		_type   messageType
 		content string
 	}
 
+	// session represents the application state for the chat interface
 	session struct {
 		textInput        textinput.Model
 		spinner          spinner.Model
@@ -45,12 +49,14 @@ type (
 		waiting          bool
 	}
 
+	// commandInfo represents information about available commands
 	commandInfo struct {
 		name        string
 		description string
 	}
 )
 
+// subcommands is a map of available commands and their descriptions
 var subcommands = map[string]commandInfo{
 	"/help": {
 		name:        "/help",
@@ -70,10 +76,12 @@ var subcommands = map[string]commandInfo{
 	},
 }
 
+// userPromptText returns the placeholder text for the user input field
 func userPromptText() string {
 	return utils.OtherMessage("💬 You: ")
 }
 
+// getMarkdownString converts content to markdown format
 func getMarkdownString(content string) string {
 	contentMD, err := utils.ToMarkDown(content)
 	if err != nil {
@@ -84,6 +92,7 @@ func getMarkdownString(content string) string {
 	return contentMD
 }
 
+// initSession initializes a new session with default settings
 func initSession(modelRequest ollama.ModelRequest, models []ollama.ModelInfo) *session {
 	ti := textinput.New()
 	ti.Placeholder = "Type your message here... (try typing '/' for commands)"
@@ -110,22 +119,27 @@ func initSession(modelRequest ollama.ModelRequest, models []ollama.ModelInfo) *s
 	}
 }
 
+// Init initializes the session and returns the initial commands
 func (s *session) Init() tea.Cmd {
 	return tea.Batch(textinput.Blink, s.spinner.Tick)
 }
 
+// clearInput resets the text input field and suggestions
 func (s *session) clearInput() {
 	s.textInput.Reset()
 	s.textInput.SetSuggestions([]string{})
 }
 
+// addModelMessage adds a new message to the model request
 func (s *session) addModelMessage(message ollama.Message) {
 	*s.modelRequest.Messages = append(*s.modelRequest.Messages, message)
 }
 
+// updateSessionMessages updates the chat history with a new message
 func (s *session) updateSessionMessages(message sessionMessage) {
 	timestamp := time.Now().Format(time.Kitchen)
 
+	// Format the message based on its type
 	switch message._type {
 	case successMsg:
 		message.content = utils.SuccessBox(message.content)
@@ -137,12 +151,15 @@ func (s *session) updateSessionMessages(message sessionMessage) {
 		message.content = utils.AiMsgBox(timestamp, message.content)
 	}
 
+	// Update the chat history with the new message
 	s.messagesMarkdown += message.content
 
+	// Update the viewport with the new content and scroll to the bottom
 	s.vp.SetContent(s.messagesMarkdown)
 	s.vp.GotoBottom()
 }
 
+// handleHelp displays the available commands in a formatted message
 func handleHelp(s *session) (*session, tea.Cmd) {
 	helpText := "# 📚 Available Commands:\n\n"
 	for _, cmd := range subcommands {
@@ -152,6 +169,7 @@ func handleHelp(s *session) (*session, tea.Cmd) {
 	helpText += "- Type / to see available commands with autocomplete\n"
 	helpText += "- Type 'exit' or 'quit' to leave"
 
+	// Update the chat history with the help message
 	s.updateSessionMessages(sessionMessage{
 		_type:   infoMsg,
 		content: getMarkdownString(helpText),
@@ -161,10 +179,12 @@ func handleHelp(s *session) (*session, tea.Cmd) {
 	return s, nil
 }
 
+// handleClearHistory clears the chat history and resets the model request
 func handleClearHistory(s *session) (*session, tea.Cmd) {
 	s.modelRequest.Messages = &[]ollama.Message{ollama.SystemPromptMessage()}
 	s.messagesMarkdown = ""
 
+	// Update the chat history with a success message
 	s.updateSessionMessages(sessionMessage{
 		_type:   successMsg,
 		content: "Chat History cleared! 🧹",
@@ -174,9 +194,11 @@ func handleClearHistory(s *session) (*session, tea.Cmd) {
 	return s, nil
 }
 
+// handleModelListing lists available models
 func handleModelListing(s *session) (*session, tea.Cmd) {
 	modelsContent, err := ollama.ShowModels(OclaiConfig.BaseURL, &s.models)
 	if err != nil {
+		// Update the chat history with an error message
 		s.updateSessionMessages(sessionMessage{
 			_type:   errMsg,
 			content: err.Error(),
@@ -184,6 +206,7 @@ func handleModelListing(s *session) (*session, tea.Cmd) {
 		return s, nil
 	}
 
+	// Update the chat history with the model list
 	s.updateSessionMessages(sessionMessage{
 		_type:   infoMsg,
 		content: modelsContent,
@@ -193,9 +216,11 @@ func handleModelListing(s *session) (*session, tea.Cmd) {
 	return s, nil
 }
 
+// handleModelSwitch switches to a different model
 func handleModelSwitch(s *session, newModel string) (*session, tea.Cmd) {
 	var isValid bool
 
+	// Check if the model exists
 	for _, _model := range s.models {
 		if newModel == _model.Name {
 			isValid = true
@@ -203,6 +228,7 @@ func handleModelSwitch(s *session, newModel string) (*session, tea.Cmd) {
 		}
 	}
 
+	// Provide feedback based on whether the model is valid
 	if !isValid {
 		s.updateSessionMessages(sessionMessage{
 			_type:   errMsg,
@@ -220,14 +246,17 @@ func handleModelSwitch(s *session, newModel string) (*session, tea.Cmd) {
 	return s, nil
 }
 
+// updateSuggestions updates the text input suggestions based on the current input
 func (s *session) updateSuggestions() {
 	input := s.textInput.Value()
 
+	// Only show suggestions if the input starts with a slash
 	if !strings.HasPrefix(input, "/") || len(input) <= 1 {
 		s.textInput.SetSuggestions([]string{})
 		return
 	}
 
+	// Find matching commands
 	var matches []string
 	for cmd := range subcommands {
 		if strings.HasPrefix(cmd, input) {
@@ -235,12 +264,15 @@ func (s *session) updateSuggestions() {
 		}
 	}
 
+	// Set the suggestions
 	s.textInput.SetSuggestions(matches)
 }
 
+// handleCommand processes a command input
 func (s *session) handleCommand(command string) (*session, tea.Cmd) {
 	cmd := strings.Fields(command)
 
+	// Check if the command exists in the subcommands map
 	if cmdInfo, exists := subcommands[cmd[0]]; exists {
 		switch cmdInfo.name {
 		case "/help":
@@ -257,6 +289,7 @@ func (s *session) handleCommand(command string) (*session, tea.Cmd) {
 		}
 	}
 
+	// Provide feedback for unknown commands
 	s.updateSessionMessages(sessionMessage{
 		_type:   errMsg,
 		content: fmt.Sprintf("Unknown command: %s. Type '/help' to view the available commands.", cmd),
@@ -266,9 +299,11 @@ func (s *session) handleCommand(command string) (*session, tea.Cmd) {
 	return s, nil
 }
 
+// sendChatRequest sends a chat request to the AI model
 func (s *session) sendChatRequest() {
 	modelResponse, err := chatWithTools(context.Background(), s.modelRequest)
 	if err != nil {
+		// Handle errors by displaying an error message
 		s.updateSessionMessages(sessionMessage{
 			_type:   errMsg,
 			content: err.Error(),
@@ -276,6 +311,7 @@ func (s *session) sendChatRequest() {
 		return
 	}
 
+	// Convert the response to markdown and update the chat history
 	content, err := utils.ToMarkDown(modelResponse.Message.Content)
 	if err != nil {
 		s.updateSessionMessages(sessionMessage{
@@ -285,6 +321,7 @@ func (s *session) sendChatRequest() {
 		return
 	}
 
+	// Add the AI response to the model request and update the chat history
 	s.addModelMessage(ollama.Message{
 		Role:    ollama.AssistantRole,
 		Content: content,
@@ -298,6 +335,7 @@ func (s *session) sendChatRequest() {
 	s.spinnerMsg = ""
 }
 
+// Update handles application state updates based on the received message
 func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var (
 		cmd  tea.Cmd
@@ -336,6 +374,7 @@ func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return s.handleCommand(input)
 			}
 
+			// Add user message to the model request and update chat history
 			s.addModelMessage(ollama.Message{
 				Role:    ollama.UserRole,
 				Content: input,
@@ -345,6 +384,7 @@ func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				content: input,
 			})
 
+			// Set waiting state and start the chat request
 			s.waiting = true
 			s.spinnerMsg = "Thinking"
 
@@ -360,6 +400,7 @@ func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return s, cmd
 	}
 
+	// Update text input and viewport
 	prevValue := s.textInput.Value()
 	s.textInput, cmd = s.textInput.Update(msg)
 	cmds = append(cmds, cmd)
@@ -374,6 +415,7 @@ func (s *session) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return s, tea.Batch(cmds...)
 }
 
+// View renders the application interface
 func (s *session) View() string {
 	var (
 		output strings.Builder
@@ -384,24 +426,28 @@ func (s *session) View() string {
 		bottom string
 	)
 
+	// Startup message with application information
 	startupTxt := fmt.Sprintf("# 🚀 Starting interactive session with *%s*\n", s.modelRequest.Model)
 	startupTxt += "- Type `exit`, `quit`, or press `Ctrl+C` to end the session.\n"
 	startupTxt += "- Type `/help` for available commands."
 
 	top = getMarkdownString(startupTxt)
 
+	// Display chat history or a prompt if it's empty
 	if s.messagesMarkdown == "" {
 		middle = getMarkdownString("*Start the conversation by typing a message below!*")
 	} else {
 		middle = s.vp.View()
 	}
 
+	// Display spinner or text input based on waiting state
 	if s.waiting {
 		bottom = s.spinnerMsg + " " + s.spinner.View()
 	} else {
 		bottom = s.textInput.View()
 	}
 
+	// Combine all sections and return the final output
 	output.WriteString(top + "\n\n" + middle + "\n\n" + bottom)
 
 	return output.String()

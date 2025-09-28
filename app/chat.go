@@ -8,6 +8,7 @@ import (
 	"github.com/thejasmeetsingh/oclai/ollama"
 )
 
+// getToolResp retrieves the response from a tool call using the MCP session.
 func getToolResp(ctx context.Context, tool ollama.ToolCall) (string, error) {
 	mcpSession, err := mcp.GetSessionFromToolName(ctx, tool.Function.Name)
 	if err != nil {
@@ -22,6 +23,7 @@ func getToolResp(ctx context.Context, tool ollama.ToolCall) (string, error) {
 	return mcp.CallTool(ctx, mcpSession, toolParams)
 }
 
+// chatWithTools handles chat interactions with tools by recursively processing tool calls.
 func chatWithTools(ctx context.Context, request ollama.ModelRequest) (*ollama.ModelResponse, error) {
 	request.Options = map[string]any{"num_ctx": OclaiConfig.NumCtx}
 
