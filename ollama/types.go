@@ -2,6 +2,7 @@ package ollama
 
 import "time"
 
+// Constants defining the roles in the ollama chat system
 const (
 	SystemRole    string = "system"
 	UserRole      string = "user"
