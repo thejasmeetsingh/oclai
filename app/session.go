@@ -218,18 +218,17 @@ func handleModelListing(s *session) (*session, tea.Cmd) {
 
 // handleModelSwitch switches to a different model
 func handleModelSwitch(s *session, newModel string) (*session, tea.Cmd) {
-	var isValid bool
-
 	// Check if the model exists
-	for _, _model := range s.models {
-		if newModel == _model.Name {
-			isValid = true
-			break
-		}
+	isExists, err := ollama.IsModelExists(OclaiConfig.BaseURL, newModel, &s.models)
+	if err != nil {
+		s.updateSessionMessages(sessionMessage{
+			_type:   errMsg,
+			content: err.Error(),
+		})
 	}
 
 	// Provide feedback based on whether the model is valid
-	if !isValid {
+	if !isExists {
 		s.updateSessionMessages(sessionMessage{
 			_type:   errMsg,
 			content: "Model does not exists",
