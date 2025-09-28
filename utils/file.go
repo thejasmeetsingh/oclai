@@ -7,26 +7,40 @@ import (
 	"path/filepath"
 )
 
+// Constants for directory and file permissions
 const (
-	rootDirName   = ".oclai"
-	dirWritePerm  = 0755
+	// rootDirName is the name of the root directory used for application data
+	rootDirName = ".oclai"
+
+	// dirWritePerm is the permission mode for creating directories
+	dirWritePerm = 0755
+
+	// fileWritePerm is the permission mode for creating files
 	fileWritePerm = 0644
 )
 
+// createAppDir creates the application root directory if it doesn't exist
 func createAppDir(appRootPath string) error {
+	// Check if the directory exists
 	if _, err := os.Stat(appRootPath); os.IsNotExist(err) {
+		// If it doesn't exist, create it with the specified permissions
 		return os.MkdirAll(appRootPath, os.FileMode(dirWritePerm))
 	}
 	return nil
 }
 
+// GetAppRootDir returns the application root directory path
 func GetAppRootDir() (string, error) {
+	// Get the user's home directory
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
 
+	// Construct the application root directory path
 	appRootPath := filepath.Join(home, rootDirName)
+
+	// Create the application root directory if it doesn't exist
 	if err = createAppDir(appRootPath); err != nil {
 		return "", err
 	}
@@ -34,7 +48,8 @@ func GetAppRootDir() (string, error) {
 	return appRootPath, nil
 }
 
-func ReadMcpConfig(filePath string) ([]byte, error) {
+// ReadConfig reads the contents of a configuration file
+func ReadConfig(filePath string) ([]byte, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
@@ -43,15 +58,18 @@ func ReadMcpConfig(filePath string) ([]byte, error) {
 	return data, nil
 }
 
+// WriteFileContents writes the given data to a file
 func WriteFileContents(filePath string, data []byte) error {
 	return os.WriteFile(filePath, data, os.FileMode(fileWritePerm))
 }
 
+// isValidFilePath checks if a file path is valid
 func isValidFilePath(filePath string) bool {
 	_, err := os.Stat(filePath)
 	return err == nil
 }
 
+// readFromReader reads content from a file reader
 func readFromReader(reader *os.File) ([]string, error) {
 	fileContents := make([]string, 0)
 
@@ -67,6 +85,7 @@ func readFromReader(reader *os.File) ([]string, error) {
 	return fileContents, nil
 }
 
+// ReadFileContent reads the contents of a file
 func ReadFileContent(filePath string) ([]string, error) {
 	var result []string
 
@@ -83,6 +102,7 @@ func ReadFileContent(filePath string) ([]string, error) {
 	return readFromReader(file)
 }
 
+// ReadPipedInput reads input from standard input (stdin)
 func ReadPipedInput() ([]string, error) {
 	var result []string
 
