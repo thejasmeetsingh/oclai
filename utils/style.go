@@ -175,9 +175,9 @@ func ErrorBox(message string) string {
 }
 
 func UserMsgBox(timestamp, message string) string {
-	return userMsgBoxStyle.Render(fmt.Sprintf("[%s] 👤:\n%s", timestamp, message))
+	return userMsgBoxStyle.Render(fmt.Sprintf("\n[%s] 👤:\n%s", timestamp, message))
 }
 
 func AiMsgBox(timestamp, message string) string {
-	return aiMsgBoxStyle.Render(fmt.Sprintf("[%s] 🤖:\n%s", timestamp, message))
+	return aiMsgBoxStyle.Render(fmt.Sprintf("\n[%s] 🤖:\n%s", timestamp, message))
 }
