@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	goMCP "github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/thejasmeetsingh/oclai/ollama"
+	"github.com/thejasmeetsingh/oclai/pkg/ollama"
 )
 
 // listTools retrieves the list of available tools from the MCP client and converts them

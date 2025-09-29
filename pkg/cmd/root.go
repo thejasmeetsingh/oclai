@@ -8,10 +8,10 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/thejasmeetsingh/oclai/app"
-	"github.com/thejasmeetsingh/oclai/mcp"
-	"github.com/thejasmeetsingh/oclai/ollama"
-	"github.com/thejasmeetsingh/oclai/utils"
+	"github.com/thejasmeetsingh/oclai/pkg/app"
+	"github.com/thejasmeetsingh/oclai/pkg/mcp"
+	"github.com/thejasmeetsingh/oclai/pkg/ollama"
+	"github.com/thejasmeetsingh/oclai/pkg/utils"
 )
 
 // rootPath stores the application root directory path

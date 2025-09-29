@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/thejasmeetsingh/oclai/app"
-	"github.com/thejasmeetsingh/oclai/cmd"
-	"github.com/thejasmeetsingh/oclai/mcp"
-	"github.com/thejasmeetsingh/oclai/utils"
+	"github.com/thejasmeetsingh/oclai/pkg/app"
+	"github.com/thejasmeetsingh/oclai/pkg/cmd"
+	"github.com/thejasmeetsingh/oclai/pkg/mcp"
+	"github.com/thejasmeetsingh/oclai/pkg/utils"
 )
 
 func main() {

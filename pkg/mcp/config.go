@@ -6,8 +6,8 @@ import (
 
 	goMCP "github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/spf13/viper"
-	"github.com/thejasmeetsingh/oclai/ollama"
-	"github.com/thejasmeetsingh/oclai/utils"
+	"github.com/thejasmeetsingh/oclai/pkg/ollama"
+	"github.com/thejasmeetsingh/oclai/pkg/utils"
 )
 
 // McpConfigFileName is the name of the configuration file

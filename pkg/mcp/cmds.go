@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/thejasmeetsingh/oclai/utils"
+	"github.com/thejasmeetsingh/oclai/pkg/utils"
 )
 
 // rootPath stores the root directory path for MCP server configurations

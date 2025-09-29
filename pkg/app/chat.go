@@ -4,8 +4,8 @@ import (
 	"context"
 
 	goMCP "github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/thejasmeetsingh/oclai/mcp"
-	"github.com/thejasmeetsingh/oclai/ollama"
+	"github.com/thejasmeetsingh/oclai/pkg/mcp"
+	"github.com/thejasmeetsingh/oclai/pkg/ollama"
 )
 
 // getToolResp retrieves the response from a tool call using the MCP session.

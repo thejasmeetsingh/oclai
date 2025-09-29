@@ -11,9 +11,9 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
-	"github.com/thejasmeetsingh/oclai/mcp"
-	"github.com/thejasmeetsingh/oclai/ollama"
-	"github.com/thejasmeetsingh/oclai/utils"
+	"github.com/thejasmeetsingh/oclai/pkg/mcp"
+	"github.com/thejasmeetsingh/oclai/pkg/ollama"
+	"github.com/thejasmeetsingh/oclai/pkg/utils"
 )
 
 // fileContents stores the content of files that need to be analyzed

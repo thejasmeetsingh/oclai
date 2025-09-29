@@ -11,8 +11,8 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/thejasmeetsingh/oclai/ollama"
-	"github.com/thejasmeetsingh/oclai/utils"
+	"github.com/thejasmeetsingh/oclai/pkg/ollama"
+	"github.com/thejasmeetsingh/oclai/pkg/utils"
 )
 
 // Constants for message types used in the application

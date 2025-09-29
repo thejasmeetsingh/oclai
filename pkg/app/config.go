@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/viper"
-	"github.com/thejasmeetsingh/oclai/utils"
+	"github.com/thejasmeetsingh/oclai/pkg/utils"
 )
 
 // AppConfigFileName is the name of the configuration file

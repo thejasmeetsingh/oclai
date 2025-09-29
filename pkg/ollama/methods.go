@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/thejasmeetsingh/oclai/utils"
+	"github.com/thejasmeetsingh/oclai/pkg/utils"
 )
 
 // CheckOllamaConnection checks if the Ollama service is running at the specified URL
