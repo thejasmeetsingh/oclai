@@ -11,7 +11,7 @@ import (
 	"github.com/thejasmeetsingh/oclai/pkg/utils"
 )
 
-func main() {
+func init() {
 	// Create a background context for the application
 	ctx := context.Background()
 
@@ -50,7 +50,9 @@ func main() {
 			os.Exit(1)
 		}
 	}
+}
 
+func main() {
 	// Execute the command-line interface
 	cmd.Execute()
 }
