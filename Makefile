@@ -9,7 +9,7 @@ testrelease:
 	git tag -d $(version)
 
 release:
-	rm -rf dist/*
+	rm -rf dist
 	git tag $(version)
 	goreleaser release --clean
 
