@@ -11,8 +11,7 @@ homebrew_casks:
     repository:
       owner: thejasmeetsingh
       name: oclai
-      branch: main
-      token: "{{ .Env.GITHUB_TOKEN }}"
+      branch: master
     completions:
       bash: completions/oclai.bash
       zsh: completions/oclai.zsh
@@ -69,8 +68,7 @@ scoops:
     repository:
       owner: thejasmeetsingh
       name: oclai
-      branch: main
-      token: "{{ .Env.GITHUB_TOKEN }}"
+      branch: master
     commit_msg_template: "chore: update Scoop manifest for {{ .ProjectName }} version {{ .Tag }}"
     homepage: "https://github.com/thejasmeetsingh/oclai"
     description: "An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."
