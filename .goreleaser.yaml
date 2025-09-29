@@ -1,0 +1,135 @@
+version: 2
+
+project_name: oclai
+
+before:
+  hooks:
+    - go mod tidy
+
+brews:
+  - name: oclai
+    repository:
+      owner: thejasmeetsingh
+      name: oclai
+      branch: main
+      token: "{{ .Env.GITHUB_TOKEN }}"
+    directory: Formula
+    commit_msg_template: "chore: update Homebrew formula for {{ .ProjectName }} version {{ .Tag }}"
+    homepage: "https://github.com/thejasmeetsingh/oclai"
+    description: "An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."
+    license: "MIT"
+    install: |
+      bin.install "oclai"
+    test: |
+      system "#{bin}/oclai", "--version"
+
+nfpms:
+  - id: oclai
+    package_name: oclai
+    description: "An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."
+    homepage: "https://github.com/thejasmeetsingh/oclai"
+    license: MIT
+    formats:
+      - deb
+    bindir: /usr/bin
+    contents:
+      - src: ./oclai
+        dst: /usr/bin/oclai
+        file_info:
+          mode: 0755
+      - src: ./LICENSE
+        dst: /usr/share/doc/oclai/LICENSE
+        file_info:
+          mode: 0644
+      - src: ./README.md
+        dst: /usr/share/doc/oclai/README.md
+        file_info:
+          mode: 0644
+    file_name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+
+scoops:
+  - name: oclai
+    repository:
+      owner: thejasmeetsingh
+      name: oclai
+      branch: main
+      token: "{{ .Env.GITHUB_TOKEN }}"
+    commit_msg_template: "chore: update Scoop manifest for {{ .ProjectName }} version {{ .Tag }}"
+    homepage: "https://github.com/thejasmeetsingh/oclai"
+    description: "An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."
+    license: MIT
+
+builds:
+  - id: oclai
+    main: ./main.go
+    binary: oclai
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - trimpath
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+    goos:
+      - linux
+      - darwin
+      - windows
+    
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - formats: [tar.gz]
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - README*
+      - CHANGELOG*
+
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  use: github
+  sort: asc
+  format: "{{.SHA}}: {{.Message}} (@{{.AuthorUsername}})"
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - 'typo'
+      - 'Merge pull request'
+      - 'Merge branch'
+
+release:
+  github:
+    owner: thejasmeetsingh
+    name: oclai
+  draft: false
+  prerelease: auto
+  name_template: "{{.ProjectName}} v{{.Version}}"
+  disable: false
+  skip_upload: false
