@@ -43,10 +43,6 @@ nfpms:
     bindir: /usr/bin
     maintainer: 'Jasmeet Singh'
     contents:
-      - src: ./oclai
-        dst: /usr/bin/oclai
-        file_info:
-          mode: 0755
       - src: ./LICENSE
         dst: /usr/share/doc/oclai/LICENSE
         file_info:
