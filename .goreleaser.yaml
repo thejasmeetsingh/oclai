@@ -6,22 +6,32 @@ before:
   hooks:
     - go mod tidy
 
-brews:
+homebrew_casks:
   - name: oclai
     repository:
       owner: thejasmeetsingh
       name: oclai
       branch: main
       token: "{{ .Env.GITHUB_TOKEN }}"
-    directory: Formula
+    completions:
+      bash: completions/oclai.bash
+      zsh: completions/oclai.zsh
+      fish: completions/oclai.fish
+    directory: Casks
     commit_msg_template: "chore: update Homebrew formula for {{ .ProjectName }} version {{ .Tag }}"
     homepage: "https://github.com/thejasmeetsingh/oclai"
     description: "An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."
     license: "MIT"
-    install: |
-      bin.install "oclai"
-    test: |
-      system "#{bin}/oclai", "--version"
+    zap:
+      trash:
+        - "~/.oclai"
+        - "~/Library/Caches/oclai"
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/oclai"]
+          end
 
 nfpms:
   - id: oclai
@@ -32,6 +42,7 @@ nfpms:
     formats:
       - deb
     bindir: /usr/bin
+    maintainer: 'Jasmeet Singh'
     contents:
       - src: ./oclai
         dst: /usr/bin/oclai
@@ -109,7 +120,7 @@ checksum:
   algorithm: sha256
 
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 
 changelog:
   use: github
