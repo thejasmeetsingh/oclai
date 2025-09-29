@@ -11,4 +11,7 @@ testrelease:
 release:
 	rm -rf dist/*
 	git tag $(version)
-	goreleaser --snapshot --clean --skip=publish
+	goreleaser release --clean
+
+checkconfig:
+	goreleaser check
