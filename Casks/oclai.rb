@@ -17,22 +17,22 @@ cask "oclai" do
   on_macos do
     on_intel do
       url "https://github.com/thejasmeetsingh/oclai/releases/download/#{version}/oclai_#{version}_Darwin_x86_64.tar.gz"
-      sha256 "d45355b320e52cd578f99a0fc2104f1c08798703ec596ae60f5148d6d76476bf"
+      sha256 "a59077ae5ee75d7e65845a2ae881e9d73fe9231d6d73e81ad488ac1eef4d03ce"
     end
     on_arm do
       url "https://github.com/thejasmeetsingh/oclai/releases/download/#{version}/oclai_#{version}_Darwin_arm64.tar.gz"
-      sha256 "396e2b1fbda80d0a2aaab511998295e0caa471e2f2a54e2aefb29d154234b9f3"
+      sha256 "e89efec48d29ef81cb822c148e0fcb7f13cb0b1be1f08b3f50e7836f9bba9a0a"
     end
   end
 
   on_linux do
     on_intel do
       url "https://github.com/thejasmeetsingh/oclai/releases/download/#{version}/oclai_#{version}_Linux_x86_64.tar.gz"
-      sha256 "c77c4555651e3b1ded9d1106d5c5b8407642f762b02258cc5483b3f03df91326"
+      sha256 "8615552de78ed5d7b1c519bab7e02902124fb0d1b38a9b414225dacf7bd34929"
     end
     on_arm do
       url "https://github.com/thejasmeetsingh/oclai/releases/download/#{version}/oclai_#{version}_Linux_arm64.tar.gz"
-      sha256 "eca5d77b77b588843ec97863588c9978d79cedbf89009120f5257b705feac3a0"
+      sha256 "6faa8f87b4d225484c743fab04702537763b1c8343e70af5c1a1fdc1cae697f5"
     end
   end
 
