@@ -97,7 +97,7 @@ Before installing Oclai, ensure you have:
 
 ```bash
 brew tap thejasmeetsingh/oclai https://github.com/thejasmeetsingh/oclai
-brew install --cask oclai # or: brew install oclai
+brew install --cask oclai  # or: brew install oclai
 ```
 
 #### Linux
