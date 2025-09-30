@@ -1,0 +1,22 @@
+{
+    "version": "1.0.0",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/thejasmeetsingh/oclai/releases/download/1.0.0/oclai_1.0.0_Windows_x86_64.zip",
+            "bin": [
+                "oclai.exe"
+            ],
+            "hash": "432964342ddf9a86c57b15030d2656befd834162c6bf8ff38ae3b82d05741204"
+        },
+        "arm64": {
+            "url": "https://github.com/thejasmeetsingh/oclai/releases/download/1.0.0/oclai_1.0.0_Windows_arm64.zip",
+            "bin": [
+                "oclai.exe"
+            ],
+            "hash": "84392df4480393e7caa4a3f4eb07c3912285b77caf1a955ac9b8ac249f68a2a8"
+        }
+    },
+    "homepage": "https://github.com/thejasmeetsingh/oclai",
+    "license": "MIT",
+    "description": "An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."
+}
