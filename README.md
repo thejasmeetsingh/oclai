@@ -2,6 +2,8 @@
 
 > An AI powered terminal assistant similar to Claude Code and Gemini CLI, but runs entirely offline using local models. No API keys, no subscriptions, no data leaving your machine.
 
+![logo](./assets/logo.png)
+
 ## Why Oclai?
 
 While tools like Claude Code and Gemini CLI have set the standard for AI-powered terminal experiences, they require cloud connectivity and API costs. **Oclai** brings similar capabilities directly to your terminal with a key difference: it's completely **offline**, **free**, and runs on **local AI models**.
