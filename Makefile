@@ -11,6 +11,7 @@ testrelease:
 release:
 	rm -rf dist
 	git tag $(version)
+	git push origin $(version)
 	goreleaser release --clean
 
 checkconfig:
