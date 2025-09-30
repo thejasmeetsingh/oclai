@@ -19,6 +19,7 @@ homebrew_casks:
     directory: Casks
     url:
       template: https://github.com/thejasmeetsingh/oclai/releases/download/{{ .Tag }}/{{ .ArtifactName }}
+      using: ":homebrew_curl"
     commit_msg_template: "chore: update Homebrew formula for {{ .ProjectName }} version {{ .Tag }}"
     homepage: "https://github.com/thejasmeetsingh/oclai"
     description: "An AI powered terminal assistant similar to Claude Code and Gemini CLI, but runs entirely offline using local models. No API keys, no subscriptions, no data leaving your machine."
