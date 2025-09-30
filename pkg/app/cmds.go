@@ -111,7 +111,7 @@ var (
 		Long:    utils.InfoBox("Ask a query to the model. You can provide a query directly, pipe input from another command, or specify a file to analyze."),
 		Args:    cobra.MinimumNArgs(1),
 		Example: `
-		oclai query "Hey what's up --model qwen3:latest"
+		oclai query "Hey what's up" --model qwen3:latest
 		cat /path/file.txt | oclai q "Summerize this file"
 		oclai q "Analyze this code" -f /path/main.py
 	`,
@@ -190,7 +190,7 @@ var (
 
 func init() {
 	// Register the file flag to read from a file and ask a query about the content
-	Query.PersistentFlags().FuncP("file", "f", utils.OtherMessage("Read from a file and ask query about the content"), func(s string) error {
+	Query.PersistentFlags().FuncP("file", "f", "Read from a file and ask query about the content", func(s string) error {
 		contents, err := utils.ReadFileContent(s)
 		if err != nil {
 			return err
