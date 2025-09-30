@@ -6,14 +6,14 @@
             "bin": [
                 "oclai.exe"
             ],
-            "hash": "599863433bf70f4d5c757229e94d64dea2d257f502b7f342008e0b6da3fe844c"
+            "hash": "71f25ca280451f20e0cb1affebd68e6cdf46f2934f069ff74f3bd16e8669446a"
         },
         "arm64": {
             "url": "https://github.com/thejasmeetsingh/oclai/releases/download/v1.0.0/oclai_1.0.0_Windows_arm64.zip",
             "bin": [
                 "oclai.exe"
             ],
-            "hash": "a12adc3472903e4465b5e2eba18dd6c929843b0a697c29377c8f4edb265706a0"
+            "hash": "7e067a3e5b685182019c231d84864c7f970579287f71efdda20ac6d455908d94"
         }
     },
     "homepage": "https://github.com/thejasmeetsingh/oclai",
