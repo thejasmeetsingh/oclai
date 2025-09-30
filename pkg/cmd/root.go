@@ -22,7 +22,7 @@ var (
 	rootCmd = &cobra.Command{
 		Use:     "oclai",
 		Short:   "A completely offline agentic CLI",
-		Long:    utils.InfoBox("An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."),
+		Long:    utils.InfoBox("An AI powered terminal assistant similar to Claude Code and Gemini CLI, but runs entirely offline using local models. No API keys, no subscriptions, no data leaving your machine."),
 		Example: `oclai q "Tell me about the roman empire"`,
 		Run: func(cmd *cobra.Command, args []string) {
 			// If there are arguments, do nothing (handled by other commands)
