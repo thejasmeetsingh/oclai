@@ -96,8 +96,8 @@ Before installing Oclai, ensure you have:
 #### macOS
 
 ```bash
-brew tap thejasmeetsingh/oclai
-brew install --cask oclai
+brew tap thejasmeetsingh/oclai https://github.com/thejasmeetsingh/oclai
+brew install --cask oclai # or: brew install oclai
 ```
 
 #### Linux
