@@ -10,29 +10,26 @@ cask "oclai" do
   end
 
   binary "oclai"
-  bash_completion "completions/oclai.bash"
-  zsh_completion "completions/oclai.zsh"
-  fish_completion "completions/oclai.fish"
 
   on_macos do
     on_intel do
       url "https://github.com/thejasmeetsingh/oclai/releases/download/v#{version}/oclai_#{version}_Darwin_x86_64.tar.gz"
-      sha256 "563785da11da79bf609b4172ff5b086901f0e27dadb2683e203bd49648a796f1"
+      sha256 "625eaa5f10c67ed70e562611ca07a0f3e69e88e289d3e48f417ecfbdc094c8f3"
     end
     on_arm do
       url "https://github.com/thejasmeetsingh/oclai/releases/download/v#{version}/oclai_#{version}_Darwin_arm64.tar.gz"
-      sha256 "30ee5512a36acff593f8cd0e8e9e51acb2e185693f12cfc23945e841dce2fd70"
+      sha256 "086f937bb66a3f29c5eaabbfe7de97aeaa84cc305b9b950bd96cd52ccc19166c"
     end
   end
 
   on_linux do
     on_intel do
       url "https://github.com/thejasmeetsingh/oclai/releases/download/v#{version}/oclai_#{version}_Linux_x86_64.tar.gz"
-      sha256 "76d7cd9dc3206f680be798065958b117fc0bc982882b64a9c4aab76a09ecfed9"
+      sha256 "04f1e6ba5434bb3cc3e1c998288cbedcc8a6572744669b8d812da31a76f2264f"
     end
     on_arm do
       url "https://github.com/thejasmeetsingh/oclai/releases/download/v#{version}/oclai_#{version}_Linux_arm64.tar.gz"
-      sha256 "f21c5da8cb5e8ba8b0ef28a12362e7ddf89c1f052a6db33bdfb3587a539564a3"
+      sha256 "135295cda026e73f0bcc1228bb7ec10237379583a0e8945c7f2ac7b84731ea39"
     end
   end
 
