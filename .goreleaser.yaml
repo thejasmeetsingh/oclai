@@ -17,9 +17,11 @@ homebrew_casks:
       zsh: completions/oclai.zsh
       fish: completions/oclai.fish
     directory: Casks
+    url:
+      template: https://github.com/thejasmeetsingh/oclai/releases/download/{{ .Tag }}/{{ .ArtifactName }}
     commit_msg_template: "chore: update Homebrew formula for {{ .ProjectName }} version {{ .Tag }}"
     homepage: "https://github.com/thejasmeetsingh/oclai"
-    description: "An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."
+    description: "An AI powered terminal assistant similar to Claude Code and Gemini CLI, but runs entirely offline using local models. No API keys, no subscriptions, no data leaving your machine."
     license: "MIT"
     zap:
       trash:
@@ -35,7 +37,7 @@ homebrew_casks:
 nfpms:
   - id: oclai
     package_name: oclai
-    description: "An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."
+    description: "An AI powered terminal assistant similar to Claude Code and Gemini CLI, but runs entirely offline using local models. No API keys, no subscriptions, no data leaving your machine."
     homepage: "https://github.com/thejasmeetsingh/oclai"
     license: MIT
     formats:
@@ -65,9 +67,10 @@ scoops:
       owner: thejasmeetsingh
       name: oclai
       branch: master
+    url_template: https://github.com/thejasmeetsingh/oclai/releases/download/{{ .Tag }}/{{ .ArtifactName }}
     commit_msg_template: "chore: update Scoop manifest for {{ .ProjectName }} version {{ .Tag }}"
     homepage: "https://github.com/thejasmeetsingh/oclai"
-    description: "An offline agentic CLI that brings Claude Code and Gemini CLI capabilities to your terminal using local AI models."
+    description: "An AI powered terminal assistant similar to Claude Code and Gemini CLI, but runs entirely offline using local models. No API keys, no subscriptions, no data leaving your machine."
     license: MIT
 
 builds:
