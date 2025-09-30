@@ -12,7 +12,7 @@ homebrew_casks:
       owner: thejasmeetsingh
       name: oclai
       branch: master
-   directory: Casks
+    directory: Casks
     url:
       template: https://github.com/thejasmeetsingh/oclai/releases/download/{{ .Tag }}/{{ .ArtifactName }}
     commit_msg_template: "chore: update Homebrew formula for {{ .ProjectName }} version {{ .Tag }}"
