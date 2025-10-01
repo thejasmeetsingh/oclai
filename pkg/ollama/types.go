@@ -49,11 +49,11 @@ type (
 	ModelRequest struct {
 		Model    string         `json:"model"`
 		Think    bool           `json:"think"`
+		Stream   bool           `json:"stream"`
 		Format   string         `json:"format,omitempty"`
 		Messages *[]Message     `json:"messages"`
 		Tools    []Tool         `json:"tools,omitempty"`
 		Options  map[string]any `json:"options,omitempty"`
-		Stream   bool           `json:"stream,omitempty"`
 	}
 
 	// ModelResponse represents the response from the model API
