@@ -103,9 +103,13 @@ brew install --cask oclai  # or: brew install oclai
 #### Linux
 
 ```bash
-wget https://github.com/thejasmeetsingh/oclai/releases/download/v0.1.0/oclai_0.1.0_linux_x86_64.deb
-sudo dpkg -i oclai_0.1.0_linux_x86_64.deb
+wget https://github.com/thejasmeetsingh/oclai/releases/download/v{tag}/oclai_{tag}_linux_x86_64.deb
+sudo dpkg -i oclai_{tag}_linux_x86_64.deb
 ```
+
+**Note:**
+Replace `{tag}` with the specific version number from the repository (e.g., `0.1.0`).
+This tag corresponds to the release version available on the GitHub repository.
 
 #### Windows
 
