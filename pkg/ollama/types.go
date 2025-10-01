@@ -53,6 +53,7 @@ type (
 		Messages *[]Message     `json:"messages"`
 		Tools    []Tool         `json:"tools,omitempty"`
 		Options  map[string]any `json:"options,omitempty"`
+		Stream   bool           `json:"stream,omitempty"`
 	}
 
 	// ModelResponse represents the response from the model API

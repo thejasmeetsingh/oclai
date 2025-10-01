@@ -25,6 +25,7 @@ func getToolResp(ctx context.Context, tool ollama.ToolCall) (string, error) {
 
 // chatWithTools handles chat interactions with tools by recursively processing tool calls.
 func chatWithTools(ctx context.Context, request ollama.ModelRequest) (*ollama.ModelResponse, error) {
+	request.Stream = false
 	request.Options = map[string]any{"num_ctx": OclaiConfig.NumCtx}
 
 	response, err := ollama.Chat(OclaiConfig.BaseURL, request)
