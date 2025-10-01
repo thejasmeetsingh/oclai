@@ -1,8 +1,6 @@
-# Oclai
+<img width="1024" height="512" alt="logo" src="https://github.com/user-attachments/assets/c60f27d8-b50f-402c-9d29-2cdce23bd3d0" />
 
 > An AI powered terminal assistant similar to Claude Code and Gemini CLI, but runs entirely offline using local models. No API keys, no subscriptions, no data leaving your machine.
-
-![logo](./assets/logo.png)
 
 ## Why Oclai?
 
@@ -204,9 +202,9 @@ These flags can be used with any command:
 | `-h, --help`        | Show help information |
 | `--model <value>`   | Set default model     |
 
-## Demo
+## Watch The Demo
 
-_Coming soon! A video demonstration of Oclai's features will be added here._
+[![thumbnail](https://github.com/user-attachments/assets/f4acb824-2166-4444-b0f4-391dd8a15767)](https://ja3-projects.s3.ap-south-1.amazonaws.com/oclai.mp4)
 
 ## Known Limitations
 
