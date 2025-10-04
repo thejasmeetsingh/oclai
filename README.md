@@ -1,4 +1,4 @@
-<img width="1024" height="512" alt="logo" src="https://github.com/user-attachments/assets/c60f27d8-b50f-402c-9d29-2cdce23bd3d0" />
+<img width="1024" height="512" alt="logo" src="https://jasmeet-portfolio-assets.s3.ap-south-1.amazonaws.com/projects/oclai.png" />
 
 > An AI powered terminal assistant similar to Claude Code and Gemini CLI, but runs entirely offline using local models. No API keys, no subscriptions, no data leaving your machine.
 
