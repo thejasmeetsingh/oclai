@@ -73,6 +73,7 @@ func createSession(ctx context.Context, server McpServer) (*goMCP.ClientSession,
 	} else {
 		// For command-based servers, we create an exec.Cmd and use the CommandTransport.
 		cmd := exec.Command(server.Command, server.Args...)
+		cmd.Env = os.Environ()
 
 		if len(server.Env) != 0 {
 			isDockerCmd := server.Command == "docker"
@@ -86,7 +87,7 @@ func createSession(ctx context.Context, server McpServer) (*goMCP.ClientSession,
 					cmd.Args = args
 				} else {
 					// Otherwise, set the environment variables directly on the command.
-					cmd.Env = env
+					cmd.Env = append(cmd.Env, env...)
 				}
 			}
 		}
