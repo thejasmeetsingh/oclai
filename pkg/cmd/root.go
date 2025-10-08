@@ -160,6 +160,18 @@ func setNumCtx(arg string) error {
 	return nil
 }
 
+// Retrieve the current version from the VERSION file
+func getCurrVersion() string {
+	data, err := utils.ReadConfig("VERSION")
+	if err != nil {
+		fmt.Println(utils.ErrorMessage("error caught while retrieving version information"))
+		os.Exit(1)
+	}
+
+	version := strings.TrimSpace(string(data))
+	return version
+}
+
 func init() {
 	// Get application root directory
 	_rootPath, err := utils.GetAppRootDir()
@@ -174,6 +186,10 @@ func init() {
 	rootCmd.PersistentFlags().Func("baseURL", "Set Ollama BaseURL", setBaseURL)
 	rootCmd.PersistentFlags().Func("model", "Set Default Model", setDefaultModel)
 	rootCmd.PersistentFlags().Func("ctx", "Set Context Limit", setNumCtx)
+
+	// Add version information in root cmd
+	rootCmd.Version = getCurrVersion()
+	rootCmd.SetVersionTemplate(`Oclai version is {{printf "%s\n" .Version}}`)
 
 	// Add sub-commands to root
 	rootCmd.AddCommand(
