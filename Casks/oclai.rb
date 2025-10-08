@@ -3,7 +3,7 @@ cask "oclai" do
   name "oclai"
   desc "An AI powered terminal assistant similar to Claude Code and Gemini CLI, but runs entirely offline using local models. No API keys, no subscriptions, no data leaving your machine."
   homepage "https://github.com/thejasmeetsingh/oclai"
-  version "1.0.5"
+  version "1.0.6"
 
   livecheck do
     skip "Auto-generated on release."
@@ -14,22 +14,22 @@ cask "oclai" do
   on_macos do
     on_intel do
       url "https://github.com/thejasmeetsingh/oclai/releases/download/v#{version}/oclai_#{version}_Darwin_x86_64.tar.gz"
-      sha256 "0b4214199923d4be9421e1360f055f72680a0d3301912daad5a4b4cadc2cc72a"
+      sha256 "90a63cc169c841f4afc3560a248a68f06ec25cb2bf5bf5e1de01dc7bc6d0c6f4"
     end
     on_arm do
       url "https://github.com/thejasmeetsingh/oclai/releases/download/v#{version}/oclai_#{version}_Darwin_arm64.tar.gz"
-      sha256 "6459b33d41c9ec36e563f43c755344216f6562be8d95611228f8f304cf54185f"
+      sha256 "128272e609722682e75a589d405b7e87c1b48b2bbcbf35e8cf130c1040eb38a9"
     end
   end
 
   on_linux do
     on_intel do
       url "https://github.com/thejasmeetsingh/oclai/releases/download/v#{version}/oclai_#{version}_Linux_x86_64.tar.gz"
-      sha256 "7fd61f00eeb50dfbd555cdb0f11de3362a9c153988b34e05c10df7a252a2c02e"
+      sha256 "f2cff0a470ad4b9790a7442b3baec80c55c99035b9296ba3d1a9ce6924966bc3"
     end
     on_arm do
       url "https://github.com/thejasmeetsingh/oclai/releases/download/v#{version}/oclai_#{version}_Linux_arm64.tar.gz"
-      sha256 "89fb3069b95125a4e97d1207dbd992d497ba19a77b76b46927098c8d1e799535"
+      sha256 "c56de38b9b0a2836500a5093c951fe71d160eb47793e1abe0aa8f536d6a7db56"
     end
   end
 
