@@ -1,19 +1,19 @@
 {
-    "version": "1.0.5",
+    "version": "1.0.6",
     "architecture": {
         "64bit": {
-            "url": "https://github.com/thejasmeetsingh/oclai/releases/download/v1.0.5/oclai_1.0.5_Windows_x86_64.zip",
+            "url": "https://github.com/thejasmeetsingh/oclai/releases/download/v1.0.6/oclai_1.0.6_Windows_x86_64.zip",
             "bin": [
                 "oclai.exe"
             ],
-            "hash": "0c8d679db4692c515cc569b1bb2f4f01f357e3124fd09a07de34a476b831a618"
+            "hash": "362f7b277ad3c7781fd45abb6409075c8f75def7a23a93a070edbbdd2cb98e3c"
         },
         "arm64": {
-            "url": "https://github.com/thejasmeetsingh/oclai/releases/download/v1.0.5/oclai_1.0.5_Windows_arm64.zip",
+            "url": "https://github.com/thejasmeetsingh/oclai/releases/download/v1.0.6/oclai_1.0.6_Windows_arm64.zip",
             "bin": [
                 "oclai.exe"
             ],
-            "hash": "547feb44c357be9bc927eae98802e5212362af010656448de237977ae3e86896"
+            "hash": "72c88e14e4325f2b9d8f9644239662ed9a2889890bf3a7a4854335150c75cc04"
         }
     },
     "homepage": "https://github.com/thejasmeetsingh/oclai",
