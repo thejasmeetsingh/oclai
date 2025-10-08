@@ -24,6 +24,7 @@ var (
 		Short:   "A completely offline agentic CLI",
 		Long:    utils.InfoBox("An AI powered terminal assistant similar to Claude Code and Gemini CLI, but runs entirely offline using local models.\nNo API keys, no subscriptions, no data leaving your machine."),
 		Example: `oclai q "Tell me about the roman empire"`,
+		Version: "1.0.7",
 		Run: func(cmd *cobra.Command, args []string) {
 			// If there are arguments, do nothing (handled by other commands)
 			if len(args) != 0 {
@@ -160,18 +161,6 @@ func setNumCtx(arg string) error {
 	return nil
 }
 
-// Retrieve the current version from the VERSION file
-func getCurrVersion() string {
-	data, err := utils.ReadConfig("VERSION")
-	if err != nil {
-		fmt.Println(utils.ErrorMessage("error caught while retrieving version information"))
-		os.Exit(1)
-	}
-
-	version := strings.TrimSpace(string(data))
-	return version
-}
-
 func init() {
 	// Get application root directory
 	_rootPath, err := utils.GetAppRootDir()
@@ -187,8 +176,7 @@ func init() {
 	rootCmd.PersistentFlags().Func("model", "Set Default Model", setDefaultModel)
 	rootCmd.PersistentFlags().Func("ctx", "Set Context Limit", setNumCtx)
 
-	// Add version information in root cmd
-	rootCmd.Version = getCurrVersion()
+	// Update version display template
 	rootCmd.SetVersionTemplate(`Oclai version is {{printf "%s\n" .Version}}`)
 
 	// Add sub-commands to root
